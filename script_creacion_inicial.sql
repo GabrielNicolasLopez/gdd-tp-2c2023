@@ -223,8 +223,8 @@ CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE
 (
     codigo             NUMERIC(18, 0) PRIMARY KEY,
     tipo_inmueble_id   INT,
-    descripcion        NVARCHAR(100) NOT NULL,
-    nombre             NVARCHAR(20),
+    descripcion        NVARCHAR(100),
+    nombre             NVARCHAR(100),
     propietario_id     INT,
     barrio_id          INT,
     ambientes_id       INT,
@@ -239,43 +239,43 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ORIENTACION
 (
-    id          INT IDENTITY (1,1) PRIMARY KEY,
-    descripcion NVARCHAR(100)
+    id          INT IDENTITY (1, 1) PRIMARY KEY,
+    descripcion NVARCHAR(100),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DISPOSICION
 (
-    id          INT IDENTITY (1,1) PRIMARY KEY,
+    id          INT IDENTITY (1, 1) PRIMARY KEY,
     descripcion NVARCHAR(100)
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_INMUEBLE
 (
-    id          INT IDENTITY (1,1) PRIMARY KEY,
+    id          INT IDENTITY (1, 1) PRIMARY KEY,
     descripcion NVARCHAR(100)
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AMBIENTES
 (
-    id          INT IDENTITY (1,1) PRIMARY KEY,
+    id          INT IDENTITY (1, 1) PRIMARY KEY,
     descripcion NVARCHAR(100)
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_INMUEBLE
 (
-    id          INT IDENTITY (1,1) PRIMARY KEY,
+    id          INT IDENTITY (1, 1) PRIMARY KEY,
     descripcion NVARCHAR(100)
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.CARACTERISTICA_INMUEBLE
 (
-    id          INT IDENTITY (1,1) PRIMARY KEY,
-    descripcion NVARCHAR(20),
+    id          INT IDENTITY (1, 1) PRIMARY KEY,
+    descripcion NVARCHAR(100),
 )
 GO
 
