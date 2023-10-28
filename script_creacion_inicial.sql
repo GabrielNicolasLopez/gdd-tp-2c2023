@@ -388,6 +388,10 @@ GO
 IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE') IS NOT NULL
     DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE
 GO
+
+IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO') IS NOT NULL
+    DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO
+GO
 -- Fin DROP Procedimientos
 
 -- Inicio crear schema de la aplicación
@@ -1125,7 +1129,7 @@ BEGIN
     SELECT TipoInmueble.id,
            m.INMUEBLE_DESCRIPCION,
            m.INMUEBLE_NOMBRE,
-           PropietarioPersona.persona_id,
+           Propietario.persona_id,
            Barrio.id,
            Ambientes.id,
            m.INMUEBLE_SUPERFICIETOTAL,
@@ -1137,24 +1141,68 @@ BEGIN
     FROM gd_esquema.Maestra m
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_INMUEBLE TipoInmueble
                   ON TipoInmueble.descripcion = m.INMUEBLE_TIPO_INMUEBLE
-             JOIN (SELECT Persona.mail, Propietario.persona_id
-                   FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
-                            JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO Propietario
-                                 ON Persona.id = Propietario.persona_id) PropietarioPersona
-                  ON PropietarioPersona.mail = m.PROPIETARIO_MAIL -- (1)
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio ON Barrio.descripcion = m.INMUEBLE_BARRIO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+                  ON Persona.mail = m.PROPIETARIO_MAIL
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO Propietario
+                  ON Propietario.persona_id = Persona.id
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio
+                  ON Barrio.descripcion = m.INMUEBLE_BARRIO
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AMBIENTES Ambientes
-                  on Ambientes.descripcion = m.INMUEBLE_CANT_AMBIENTES
+                  ON Ambientes.descripcion = m.INMUEBLE_CANT_AMBIENTES
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DISPOSICION Disposicion
-                  on Disposicion.descripcion = m.INMUEBLE_DISPOSICION
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ORIENTACION
-                  on Orientacion.descripcion = m.INMUEBLE_ORIENTACION
+                  ON Disposicion.descripcion = m.INMUEBLE_DISPOSICION
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ORIENTACION Orientacion
+                  ON Orientacion.descripcion = m.INMUEBLE_ORIENTACION
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_INMUEBLE EstadoInmueble
-                  on EstadoInmueble.descripcion = m.INMUEBLE_ESTADO
-    GROUP BY TipoInmueble.id, m.INMUEBLE_DESCRIPCION, m.INMUEBLE_NOMBRE, m.INMUEBLE_DIRECCION,
-             PropietarioPersona.persona_id, Barrio.id, Ambientes.id, m.INMUEBLE_SUPERFICIETOTAL,
-             Disposicion.id, Orientacion.id, EstadoInmueble.id, m.INMUEBLE_ANTIGUEDAD,
+                  ON EstadoInmueble.descripcion = m.INMUEBLE_ESTADO
+    GROUP BY TipoInmueble.id,
+             m.INMUEBLE_DESCRIPCION,
+             m.INMUEBLE_NOMBRE,
+             m.INMUEBLE_DIRECCION,
+             Propietario.persona_id,
+             Barrio.id,
+             Ambientes.id,
+             m.INMUEBLE_SUPERFICIETOTAL,
+             Disposicion.id,
+             Orientacion.id,
+             EstadoInmueble.id,
+             m.INMUEBLE_ANTIGUEDAD,
              m.INMUEBLE_EXPESAS
+END
+GO
+
+CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO
+AS
+BEGIN
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO(fecha_publicacion, agente_id, tipo_operacion_id,
+                                                                      inmueble_id, precio_publicado, tipo_moneda_id,
+                                                                      tipo_periodo_id, estado_anuncio_id,
+                                                                      fecha_finalizacion, costo_publicacion_anuncio)
+    SELECT m.ANUNCIO_FECHA_PUBLICACION,
+           Agente.persona_id,
+           TipoOperacion.id,
+           Inmueble.codigo,
+           m.ANUNCIO_PRECIO_PUBLICADO,
+           TipoMoneda.id,
+           TipoPeriodo.id,
+           EstadoAnuncio.id,
+           m.ANUNCIO_FECHA_FINALIZACION,
+           m.ANUNCIO_COSTO_ANUNCIO
+    FROM gd_esquema.Maestra m
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+                  ON Persona.mail = m.AGENTE_MAIL
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AGENTE Agente
+                  ON Agente.persona_id = Persona.id
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_OPERACION TipoOperacion
+                  ON TipoOperacion.descripcion = m.ANUNCIO_TIPO_OPERACION
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE Inmueble
+                  ON Inmueble.codigo = m.INMUEBLE_CODIGO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_MONEDA TipoMoneda
+                  ON TipoMoneda.descripcion = m.ANUNCIO_MONEDA
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_PERIODO TipoPeriodo
+                  ON TipoPeriodo.descripcion = m.ANUNCIO_TIPO_PERIODO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_ANUNCIO EstadoAnuncio
+                  ON EstadoAnuncio.descripcion = m.ANUNCIO_ESTADO
 END
 GO
 -- Fin crear Procedimientos
@@ -1224,5 +1272,8 @@ EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_AGENTE
 GO
 
 EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE
+GO
+
+EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO
 GO
 -- Fin Invocaciones de procedimientos
