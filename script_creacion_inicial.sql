@@ -301,8 +301,6 @@ GO
 -- Fin DROP Funciones
 
 -- Inicio DROP Procedimientos
-
-
 IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PROPIETARIO') IS NOT NULL
     DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PROPIETARIO
 GO
@@ -387,6 +385,9 @@ IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_AGENTE') IS N
     DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_AGENTE
 GO
 
+IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE') IS NOT NULL
+    DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE
+GO
 -- Fin DROP Procedimientos
 
 -- Inicio crear schema de la aplicación
@@ -460,7 +461,7 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE
 (
-    codigo             NUMERIC(19, 0) PRIMARY KEY,
+    codigo             NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
     tipo_inmueble_id   NUMERIC(19, 0),
     descripcion        NVARCHAR(100),
     nombre             NVARCHAR(100),
@@ -983,8 +984,6 @@ BEGIN
 END
 GO
 
---ABORT
-
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_TIPO_PERIODO
 AS
 BEGIN
@@ -1030,7 +1029,7 @@ BEGIN
     --Decidimos sacar los valores null porque no hay ningun alquiler con estado_alquiler en null
 END
 GO
---MEDIO_PAGO
+
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_MEDIO_PAGO
 AS
 BEGIN
@@ -1042,7 +1041,6 @@ BEGIN
 END
 GO
 
---TIPO_MONEDA
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_TIPO_MONEDA
 AS
 BEGIN
@@ -1054,7 +1052,6 @@ BEGIN
 END
 GO
 
---COMPRADOR
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_COMPRADOR
 AS
 BEGIN
@@ -1067,7 +1064,6 @@ BEGIN
 END
 GO
 
---INQUILINO
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INQUILINO
 AS
 BEGIN
@@ -1079,7 +1075,6 @@ BEGIN
 END
 GO
 
---PROPIETARIO
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PROPIETARIO
 AS
 BEGIN
@@ -1118,10 +1113,53 @@ END
 GO
 */
 
+CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE
+AS
+BEGIN
+    -- (1): empleo de mail para unicidad en la identificación del propietario, propietario no posee Id en tabla maestra
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE(tipo_inmueble_id, descripcion, nombre,
+                                                                       propietario_id, barrio_id,
+                                                                       ambientes_id, superficie_total, disposicion_id,
+                                                                       orientacion_id, estado_inmueble_id, antiguedad,
+                                                                       expensas)
+    SELECT TipoInmueble.id,
+           m.INMUEBLE_DESCRIPCION,
+           m.INMUEBLE_NOMBRE,
+           PropietarioPersona.persona_id,
+           Barrio.id,
+           Ambientes.id,
+           m.INMUEBLE_SUPERFICIETOTAL,
+           Disposicion.id,
+           Orientacion.id,
+           EstadoInmueble.id,
+           m.INMUEBLE_ANTIGUEDAD,
+           m.INMUEBLE_EXPESAS
+    FROM gd_esquema.Maestra m
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_INMUEBLE TipoInmueble
+                  ON TipoInmueble.descripcion = m.INMUEBLE_TIPO_INMUEBLE
+             JOIN (SELECT Persona.mail, Propietario.persona_id
+                   FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+                            JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO Propietario
+                                 ON Persona.id = Propietario.persona_id) PropietarioPersona
+                  ON PropietarioPersona.mail = m.PROPIETARIO_MAIL -- (1)
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio ON Barrio.descripcion = m.INMUEBLE_BARRIO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AMBIENTES Ambientes
+                  on Ambientes.descripcion = m.INMUEBLE_CANT_AMBIENTES
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DISPOSICION Disposicion
+                  on Disposicion.descripcion = m.INMUEBLE_DISPOSICION
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ORIENTACION
+                  on Orientacion.descripcion = m.INMUEBLE_ORIENTACION
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_INMUEBLE EstadoInmueble
+                  on EstadoInmueble.descripcion = m.INMUEBLE_ESTADO
+    GROUP BY TipoInmueble.id, m.INMUEBLE_DESCRIPCION, m.INMUEBLE_NOMBRE, m.INMUEBLE_DIRECCION,
+             PropietarioPersona.persona_id, Barrio.id, Ambientes.id, m.INMUEBLE_SUPERFICIETOTAL,
+             Disposicion.id, Orientacion.id, EstadoInmueble.id, m.INMUEBLE_ANTIGUEDAD,
+             m.INMUEBLE_EXPESAS
+END
+GO
 -- Fin crear Procedimientos
 
 -- Inicio Invocaciones de procedimientos
-
 -- Migración de tablas paramétricas sin dependencias
 EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PROVINCIA
 GO
@@ -1163,7 +1201,6 @@ EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ESTADO_INMUEBLE
 GO
 
 -- Migración de tablas paramétricas con dependencias
-
 EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_LOCALIDAD
 GO
 
@@ -1186,4 +1223,6 @@ GO
 EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_AGENTE
 GO
 
+EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE
+GO
 -- Fin Invocaciones de procedimientos
