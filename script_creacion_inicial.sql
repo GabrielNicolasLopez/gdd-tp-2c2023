@@ -1212,11 +1212,12 @@ GO
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO
 AS
 BEGIN
-    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO(agente_id, fecha_publicacion, tipo_operacion_id,
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO(codigo, agente_id, fecha_publicacion, tipo_operacion_id,
                                                                       inmueble_id, precio_publicado, tipo_moneda_id,
                                                                       tipo_periodo_id, estado_anuncio_id,
                                                                       fecha_finalizacion, costo_publicacion_anuncio)
-    SELECT DISTINCT Agente.id,
+    SELECT DISTINCT m.ANUNCIO_CODIGO,
+	                Agente.id,
                     m.ANUNCIO_FECHA_PUBLICACION,
                     TipoOperacion.id,
                     Inmueble.codigo,
