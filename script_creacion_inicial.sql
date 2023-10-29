@@ -671,7 +671,7 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO
 (
-    codigo                    NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
+    codigo                    NUMERIC(19, 0) PRIMARY KEY,
     agente_id                 NUMERIC(19, 0),
     costo_publicacion_anuncio NUMERIC(18, 2),
     estado_anuncio_id         NVARCHAR(100),
@@ -1212,6 +1212,7 @@ GO
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO
 AS
 BEGIN
+    -- TODO chequear que los ANUNCIO_CODIGO coincidan con la tabla maestra
     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO(codigo, agente_id, fecha_publicacion, tipo_operacion_id,
                                                                       inmueble_id, precio_publicado, tipo_moneda_id,
                                                                       tipo_periodo_id, estado_anuncio_id,
