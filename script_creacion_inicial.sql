@@ -488,7 +488,8 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER
 (
-    codigo            NUMERIC PRIMARY KEY,
+    --creo que codigo debería tener IDENTITY (1, 1). al igual que lo tiene codigo en pago_venta
+    codigo            NUMERIC        PRIMARY KEY,
     alquiler_id       NUMERIC        NOT NULL,
     fecha_pago        DATETIME       NULL,
     nro_periodo_pago  NUMERIC        NULL,
@@ -683,19 +684,6 @@ CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO
 )
 GO
 
-CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA
-(
-    id             NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
-    apellido       NVARCHAR(100),
-    dni            NUMERIC(18, 0),
-    fecha_nac      DATETIME,
-    fecha_registro DATETIME,
-    mail           NVARCHAR(100),
-    nombre         NVARCHAR(100),
-    telefono       NUMERIC(18, 0),
-)
-GO
-
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA
 (
     codigo         NUMERIC PRIMARY KEY,
@@ -723,6 +711,19 @@ CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER
 )
 GO
 
+CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA
+(
+    id             NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
+    apellido       NVARCHAR(100),
+    dni            NUMERIC(18, 0),
+    fecha_nac      DATETIME,
+    fecha_registro DATETIME,
+    mail           NVARCHAR(100),
+    nombre         NVARCHAR(100),
+    telefono       NUMERIC(18, 0),
+)
+GO
+
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.COMPRADOR
 (
     persona_id   NUMERIC(19, 0),
@@ -746,13 +747,6 @@ CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO
     PRIMARY KEY (persona_id, inmueble_id),
 )
 GO
-
-CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE_X_PROPIETARIO
-(
-    inmueble_id    NUMERIC(19, 0),
-    propietario_id NUMERIC(19, 0),
-    PRIMARY KEY (inmueble_id, propietario_id),
-)
 
 -- Fin crear tablas
 
