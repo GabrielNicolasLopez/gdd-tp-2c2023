@@ -347,10 +347,6 @@ IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DISPOSICION')
     DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DISPOSICION
 GO
 
-IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER') IS NOT NULL
-    DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
-GO
-
 IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_AMBIENTES') IS NOT NULL
     DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_AMBIENTES
 GO
@@ -446,6 +442,14 @@ GO
 IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_VENTA') IS NOT NULL
     DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_VENTA
 GO
+
+IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER') IS NOT NULL
+    DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
+GO
+
+IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DETALLE_IMPORTE_ALQ') IS NOT NULL
+    DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DETALLE_IMPORTE_ALQ
+GO
 -- Fin DROP Procedimientos
 
 -- Inicio crear schema de la aplicación
@@ -462,7 +466,7 @@ GO
 -- Inicio crear tablas
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DETALLE_IMPORTE_ALQ
 (
-    codigo             NUMERIC(19, 0) PRIMARY KEY,
+    codigo             NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
     alquiler_id        NUMERIC(19, 0) NOT NULL,
     nro_periodo_inicio NUMERIC(19, 2) NULL,
     nro_periodo_fin    NUMERIC(19, 2) NULL,
@@ -687,15 +691,15 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER
 (
-    codigo                NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
+    codigo                NUMERIC(19, 0) PRIMARY KEY,
     inquilino_id          NUMERIC(19, 0),
     fecha_inicio_alquiler DATETIME,
     fecha_fin_alquiler    DATETIME,
     cant_periodos         NUMERIC(19, 0),
-    deposito              NUMERIC(19, 2),
-    comision              NUMERIC(19, 2),
-    gastos_averiguaciones NUMERIC(19, 2),
-    estado_id             NUMERIC(19, 0),
+    deposito              NUMERIC(18, 2),
+    comision              NUMERIC(18, 2),
+    gastos_averiguaciones NUMERIC(18, 2),
+    estado_id             NVARCHAR(100),
     anuncio_id            NUMERIC(19, 0),
 )
 GO
@@ -875,24 +879,6 @@ GO
 -- Fin crear Funciones
 
 -- Inicio crear Procedimientos
-
-/*
-
---ALQUILER
-CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
-AS
-BEGIN
-
-  INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER(codigo, inquilino_id, fecha_inicio_alquiler, fecha_fin_alquiler, cant_periodos, deposito, comision, gastos_averiguaciones, estado_id, anuncio_id)
-  SELECT DISTINCT ALQUILER_CODIGO, i.persona_id, ALQUILER_FECHA_INICIO, ALQUILER_FECHA_FIN, ALQUILER_CANT_PERIODOS, ALQUILER_DEPOSITO, ALQUILER_COMISION, ALQUILER_GASTOS_AVERIGUA, ea.id, a.codigo
-  FROM gd_esquema.Maestra m
-  JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO i ON i.persona_id =
-  JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_ALQUILER ea ON ea.id = m.ALQUILER_ESTADO
-  JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO a ON a.codigo = m.ANUNCIO_CODIGO
-END
-GO
-*/
-
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DISPOSICION
 AS
 BEGIN
@@ -1225,22 +1211,6 @@ BEGIN
 END
 GO
 
---gabi
--- CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
--- AS
--- BEGIN
---     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER
---     (codigo, inquilino_id, fecha_inicio_alquiler, fecha_fin_alquiler, cant_periodos, deposito,
---     comision, gastos_averiguaciones, estado_id) -- FALTA AGREGAR ANUNCIO_ID
---     SELECT DISTINCT m.ALQUILER_CODIGO, (SELECT DISTINCT persona_id
---                                             FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO
---                                             WHERE codigo_alquiler = m.ALQUILER_CODIGO),
---     m.ALQUILER_FECHA_INICIO, m.ALQUILER_FECHA_INICIO, m.ALQUILER_CANT_PERIODOS, m.ALQUILER_DEPOSITO,
---     m.ALQUILER_COMISION, m.ALQUILER_GASTOS_AVERIGUA, m.ALQUILER_ESTADO
---     FROM gd_esquema.Maestra m
--- END
--- GO
-
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO
 AS
 BEGIN
@@ -1377,6 +1347,60 @@ BEGIN
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO a ON a.codigo = m.ANUNCIO_CODIGO
 END
 GO
+/*
+    codigo                numeric(19) not null
+    inquilino_id          numeric(19),
+    fecha_inicio_alquiler datetime,
+    fecha_fin_alquiler    datetime,
+    cant_periodos         numeric(19),
+    deposito              numeric(19, 2),
+    comision              numeric(19, 2),
+    gastos_averiguaciones numeric(19, 2),
+    estado_id             numeric(19),
+    anuncio_id            numeric(19),
+*/
+--ALQUILER
+CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
+AS
+BEGIN
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER(codigo, inquilino_id, fecha_inicio_alquiler,
+                                                                       fecha_fin_alquiler, cant_periodos, deposito,
+                                                                       comision, gastos_averiguaciones, estado_id,
+                                                                       anuncio_id)
+    SELECT DISTINCT ALQUILER_CODIGO,
+                    (SELECT persona_id
+                     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO Inquilino
+                     WHERE Inquilino.codigo_alquiler = m.ALQUILER_CODIGO) AS inquilino_id,
+                    ALQUILER_FECHA_INICIO,
+                    ALQUILER_FECHA_FIN,
+                    ALQUILER_CANT_PERIODOS,
+                    ALQUILER_DEPOSITO,
+                    ALQUILER_COMISION,
+                    ALQUILER_GASTOS_AVERIGUA,
+                    EstadoAlquiler.id,
+                    Alquiler.codigo
+    FROM gd_esquema.Maestra m
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_ALQUILER EstadoAlquiler
+                  ON EstadoAlquiler.id = m.ALQUILER_ESTADO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Alquiler ON Alquiler.codigo = m.ANUNCIO_CODIGO
+END
+GO
+
+CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DETALLE_IMPORTE_ALQ
+AS
+BEGIN
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DETALLE_IMPORTE_ALQ(alquiler_id, nro_periodo_inicio, nro_periodo_fin, precio)
+    SELECT DISTINCT m.ALQUILER_CODIGO,
+                    m.DETALLE_ALQ_NRO_PERIODO_INI,
+                    m.DETALLE_ALQ_NRO_PERIODO_FIN,
+                    m.DETALLE_ALQ_PRECIO
+    FROM gd_esquema.Maestra m
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER a ON a.codigo = m.ALQUILER_CODIGO
+    WHERE m.DETALLE_ALQ_NRO_PERIODO_INI IS NOT NULL
+      AND m.DETALLE_ALQ_NRO_PERIODO_FIN IS NOT NULL
+      AND m.DETALLE_ALQ_PRECIO IS NOT NULL
+END
+GO
 -- Fin crear Procedimientos
 
 -- Inicio Invocaciones de procedimientos
@@ -1462,5 +1486,11 @@ EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_CARACTERISTICA_X_INMUE
 GO
 
 EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_VENTA
+GO
+
+EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
+GO
+
+EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DETALLE_IMPORTE_ALQ
 GO
 -- Fin Invocaciones de procedimientos
