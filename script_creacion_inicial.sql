@@ -466,8 +466,8 @@ GO
 
 -- Inicio crear schema de la aplicación
 IF EXISTS (SELECT SCHEMA_NAME
-        FROM INFORMATION_SCHEMA.SCHEMATA
-        WHERE SCHEMA_NAME = 'LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO')
+           FROM INFORMATION_SCHEMA.SCHEMATA
+           WHERE SCHEMA_NAME = 'LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO')
     DROP SCHEMA LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO
 GO
 
@@ -1180,20 +1180,19 @@ BEGIN
                                                                        ambientes_id, superficie_total, disposicion_id,
                                                                        orientacion_id, estado_inmueble_id, antiguedad,
                                                                        expensas)
-    SELECT DISTINCT
-        m.INMUEBLE_CODIGO,
-        TipoInmueble.id,
-        m.INMUEBLE_DESCRIPCION,
-        m.INMUEBLE_NOMBRE,
-        Propietario.persona_id,
-        Barrio.id,
-        Ambientes.id,
-        m.INMUEBLE_SUPERFICIETOTAL,
-        Disposicion.id,
-        Orientacion.id,
-        EstadoInmueble.id,
-        m.INMUEBLE_ANTIGUEDAD,
-        m.INMUEBLE_EXPESAS
+    SELECT DISTINCT m.INMUEBLE_CODIGO,
+                    TipoInmueble.id,
+                    m.INMUEBLE_DESCRIPCION,
+                    m.INMUEBLE_NOMBRE,
+                    Propietario.persona_id,
+                    Barrio.id,
+                    Ambientes.id,
+                    m.INMUEBLE_SUPERFICIETOTAL,
+                    Disposicion.id,
+                    Orientacion.id,
+                    EstadoInmueble.id,
+                    m.INMUEBLE_ANTIGUEDAD,
+                    m.INMUEBLE_EXPESAS
     FROM gd_esquema.Maestra m
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_INMUEBLE TipoInmueble
                   ON TipoInmueble.id = m.INMUEBLE_TIPO_INMUEBLE
