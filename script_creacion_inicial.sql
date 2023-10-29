@@ -454,6 +454,10 @@ GO
 IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_VENTA') IS NOT NULL
     DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_VENTA
 GO
+
+IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_ALQUILER') IS NOT NULL
+    DROP PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_ALQUILER
+GO
 -- Fin DROP Procedimientos
 
 -- Inicio crear schema de la aplicación
@@ -1424,6 +1428,31 @@ BEGIN
                   ON Venta.codigo = m.VENTA_CODIGO
 END
 GO
+
+CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_ALQUILER
+AS
+BEGIN
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER(codigo, alquiler_id, fecha_pago,
+                                                                            nro_periodo_pago, descripcion,
+                                                                            fecha_inicio_pago, fecha_fin_pago, importe,
+                                                                            medio_pago_id, fecha_vencimiento)
+    SELECT DISTINCT m.PAGO_ALQUILER_CODIGO,
+                    Alquiler.codigo,
+                    m.PAGO_ALQUILER_FECHA,
+                    m.PAGO_ALQUILER_NRO_PERIODO,
+                    m.PAGO_ALQUILER_DESC,
+                    m.PAGO_ALQUILER_FEC_INI,
+                    m.PAGO_ALQUILER_FEC_FIN,
+                    m.PAGO_ALQUILER_IMPORTE,
+                    MedioPago.id,
+                    m.PAGO_ALQUILER_FECHA_VENCIMIENTO
+    FROM gd_esquema.Maestra m
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MEDIO_PAGO MedioPago
+                  ON MedioPago.id = m.PAGO_ALQUILER_MEDIO_PAGO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
+                  ON Alquiler.codigo = m.ALQUILER_CODIGO
+END
+GO
 -- Fin crear Procedimientos
 
 -- Inicio Invocaciones de procedimientos
@@ -1518,5 +1547,8 @@ EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_DETALLE_IMPORTE_ALQ
 GO
 
 EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_VENTA
+GO
+
+EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_ALQUILER
 GO
 -- Fin Invocaciones de procedimientos
