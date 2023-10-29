@@ -1199,7 +1199,11 @@ BEGIN
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_INMUEBLE TipoInmueble
                   ON TipoInmueble.id = m.INMUEBLE_TIPO_INMUEBLE
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+<<<<<<< Updated upstream
                   ON Persona.mail = m.PROPIETARIO_MAIL
+=======
+                  ON Persona.mail = m.PROPIETARIO_MAIL AND m.PROPIETARIO_DNI = Persona.dni
+>>>>>>> Stashed changes
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO Propietario
                   ON Propietario.persona_id = Persona.id
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio
@@ -1212,6 +1216,7 @@ BEGIN
                   ON Orientacion.id = m.INMUEBLE_ORIENTACION
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_INMUEBLE EstadoInmueble
                   ON EstadoInmueble.id = m.INMUEBLE_ESTADO
+<<<<<<< Updated upstream
 END
 GO
 
@@ -1258,10 +1263,78 @@ BEGIN
     FROM gd_esquema.Maestra m
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA p ON p.id = m.INMUEBLE_PROVINCIA
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD l ON l.id = m.INMUEBLE_LOCALIDAD
+=======
+>>>>>>> Stashed changes
     ORDER BY 1
 END
 GO
 
+<<<<<<< Updated upstream
+=======
+--gabi
+-- CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
+-- AS
+-- BEGIN
+--     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER
+--     (codigo, inquilino_id, fecha_inicio_alquiler, fecha_fin_alquiler, cant_periodos, deposito,
+--     comision, gastos_averiguaciones, estado_id) -- FALTA AGREGAR ANUNCIO_ID
+--     SELECT DISTINCT m.ALQUILER_CODIGO, (SELECT DISTINCT persona_id
+--                                             FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO
+--                                             WHERE codigo_alquiler = m.ALQUILER_CODIGO),
+--     m.ALQUILER_FECHA_INICIO, m.ALQUILER_FECHA_INICIO, m.ALQUILER_CANT_PERIODOS, m.ALQUILER_DEPOSITO,
+--     m.ALQUILER_COMISION, m.ALQUILER_GASTOS_AVERIGUA, m.ALQUILER_ESTADO
+--     FROM gd_esquema.Maestra m
+-- END
+-- GO
+
+CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ANUNCIO
+AS
+BEGIN
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO(fecha_publicacion, agente_id, tipo_operacion_id,
+                                                                      inmueble_id, precio_publicado, tipo_moneda_id,
+                                                                      tipo_periodo_id, estado_anuncio_id,
+                                                                      fecha_finalizacion, costo_publicacion_anuncio)
+    SELECT m.ANUNCIO_FECHA_PUBLICACION,
+           Agente.persona_id,
+           TipoOperacion.id,
+           Inmueble.codigo,
+           m.ANUNCIO_PRECIO_PUBLICADO,
+           TipoMoneda.id,
+           TipoPeriodo.id,
+           EstadoAnuncio.id,
+           m.ANUNCIO_FECHA_FINALIZACION,
+           m.ANUNCIO_COSTO_ANUNCIO
+    FROM gd_esquema.Maestra m
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+                  ON Persona.dni = m.AGENTE_DNI AND Persona.mail = m.AGENTE_MAIL
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AGENTE Agente
+                  ON Agente.persona_id = Persona.id
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_OPERACION TipoOperacion
+                  ON TipoOperacion.id = m.ANUNCIO_TIPO_OPERACION
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE Inmueble
+                  ON Inmueble.codigo = m.INMUEBLE_CODIGO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_MONEDA TipoMoneda
+                  ON TipoMoneda.id = m.ANUNCIO_MONEDA
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_PERIODO TipoPeriodo
+                  ON TipoPeriodo.id = m.ANUNCIO_TIPO_PERIODO
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_ANUNCIO EstadoAnuncio
+                  ON EstadoAnuncio.id = m.ANUNCIO_ESTADO
+END
+GO
+
+CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PROVINCIA_X_LOCALIDAD
+AS
+BEGIN
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA_X_LOCALIDAD(provincia_id, localidad_id)
+    SELECT DISTINCT p.id, l.id
+    FROM gd_esquema.Maestra m
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA p ON p.id = m.INMUEBLE_PROVINCIA
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD l ON l.id = m.INMUEBLE_LOCALIDAD
+    ORDER BY 1
+END
+GO
+
+>>>>>>> Stashed changes
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BARRIO_X_LOCALIDAD
 AS
 BEGIN
