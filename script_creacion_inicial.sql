@@ -130,6 +130,11 @@ ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.SUCURSAL
     DROP CONSTRAINT FK_SUCURSAL_LOCALIDAD
 GO
 
+IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FK_SUCURSAL_PROVINCIA', 'F') IS NOT NULL
+ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.SUCURSAL
+    DROP CONSTRAINT FK_SUCURSAL_PROVINCIA
+GO
+
 IF OBJECT_ID('LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FK_VENTA_TIPO_MONEDA', 'F') IS NOT NULL
 ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA
     DROP CONSTRAINT FK_VENTA_TIPO_MONEDA
@@ -491,6 +496,7 @@ CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE
     codigo           NUMERIC PRIMARY KEY,
     tipo_inmueble    NVARCHAR(100),
     descripcion      NVARCHAR(100),
+    direccion        NVARCHAR(100),
     nombre           NVARCHAR(100),
     propietario_id   NUMERIC(19, 0),
     barrio           NVARCHAR(100),
@@ -810,6 +816,10 @@ ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.SUCURSAL
     ADD CONSTRAINT FK_SUCURSAL_LOCALIDAD FOREIGN KEY (localidad) REFERENCES LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD (id)
 GO
 
+ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.SUCURSAL
+    ADD CONSTRAINT FK_SUCURSAL_PROVINCIA FOREIGN KEY (provincia) REFERENCES LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA (id)
+GO
+
 ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA
     ADD CONSTRAINT FK_VENTA_TIPO_MONEDA FOREIGN KEY (tipo_moneda) REFERENCES LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_MONEDA (id)
 GO
@@ -830,6 +840,7 @@ GO
 
 ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.COMPRADOR
     ADD CONSTRAINT UQ_COMPRADOR UNIQUE (persona_id, codigo_venta)
+GO
 
 ALTER TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO
     ADD CONSTRAINT UQ_INQUILINO UNIQUE (persona_id, codigo_alquiler)
@@ -1138,7 +1149,7 @@ CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_INMUEBLE
 AS
 BEGIN
     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE(codigo, tipo_inmueble, descripcion, nombre,
-                                                                       propietario_id, barrio,
+                                                                       direccion, propietario_id, barrio,
                                                                        ambientes, superficie_total, disposicion,
                                                                        orientacion, estado_inmueble, antiguedad,
                                                                        expensas)
@@ -1146,6 +1157,7 @@ BEGIN
                     TipoInmueble.id,
                     m.INMUEBLE_DESCRIPCION,
                     m.INMUEBLE_NOMBRE,
+                    m.INMUEBLE_DIRECCION,
                     Propietario.persona_id,
                     Barrio.id,
                     Ambientes.id,
