@@ -924,8 +924,6 @@ BEGIN
     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DISPOSICION(id)
     SELECT DISTINCT m.INMUEBLE_DISPOSICION
     FROM gd_esquema.Maestra m
-    /* Filtrar las disposiciones cuyos valores sean NULL, debido a que el caso en el que respecta dicho valor NULL
-       se trata de la definición de otra entidad que no era INMUEBLE_DISPOSICION */
     WHERE m.INMUEBLE_DISPOSICION IS NOT NULL
     ORDER BY 1
 END
@@ -1335,36 +1333,36 @@ BEGIN
     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.CARACTERISTICA_X_INMUEBLE(codigo_inmueble, caracteristica_inmueble)
     SELECT *
     FROM (SELECT m.INMUEBLE_CODIGO,
-                 CASE
-                     WHEN m.INMUEBLE_CARACTERISTICA_CABLE = '1' THEN 'Cable'
-                     END AS Cable
-          FROM gd_esquema.Maestra m
-          WHERE 2 IS NOT NULL
-          GROUP BY m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_CABLE
-          UNION
-          SELECT m.INMUEBLE_CODIGO,
-                 CASE
-                     WHEN m.INMUEBLE_CARACTERISTICA_WIFI = '1' THEN 'Wifi'
-                     END AS Wifi
-          FROM gd_esquema.Maestra m
-          WHERE 2 IS NOT NULL
-          GROUP BY m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_WIFI
-          UNION
-          SELECT m.INMUEBLE_CODIGO,
-                 CASE
-                     WHEN m.INMUEBLE_CARACTERISTICA_CALEFACCION = '1' THEN 'Calefaccion'
-                     END AS Calefaccion
-          FROM gd_esquema.Maestra m
-          WHERE 2 IS NOT NULL
-          group by m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_CALEFACCION
-          UNION
-          SELECT m.INMUEBLE_CODIGO,
-                 CASE
-                     WHEN m.INMUEBLE_CARACTERISTICA_GAS = '1' THEN 'Gas'
-                     END AS Gas
-          FROM gd_esquema.Maestra m
-          WHERE 2 IS NOT NULL
-          GROUP BY m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_GAS) Caracteristica
+                CASE
+                    WHEN m.INMUEBLE_CARACTERISTICA_CABLE = '1' THEN 'Cable'
+                    END AS Cable
+        FROM gd_esquema.Maestra m
+        WHERE 2 IS NOT NULL
+        GROUP BY m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_CABLE
+        UNION
+        SELECT m.INMUEBLE_CODIGO,
+                CASE
+                    WHEN m.INMUEBLE_CARACTERISTICA_WIFI = '1' THEN 'Wifi'
+                    END AS Wifi
+        FROM gd_esquema.Maestra m
+        WHERE 2 IS NOT NULL
+        GROUP BY m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_WIFI
+        UNION
+        SELECT m.INMUEBLE_CODIGO,
+                CASE
+                    WHEN m.INMUEBLE_CARACTERISTICA_CALEFACCION = '1' THEN 'Calefaccion'
+                    END AS Calefaccion
+        FROM gd_esquema.Maestra m
+        WHERE 2 IS NOT NULL
+        group by m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_CALEFACCION
+        UNION
+        SELECT m.INMUEBLE_CODIGO,
+                CASE
+                    WHEN m.INMUEBLE_CARACTERISTICA_GAS = '1' THEN 'Gas'
+                    END AS Gas
+        FROM gd_esquema.Maestra m
+        WHERE 2 IS NOT NULL
+        GROUP BY m.INMUEBLE_CODIGO, m.INMUEBLE_CARACTERISTICA_GAS) Caracteristica
     WHERE Cable IS NOT NULL
 END
 GO
@@ -1374,25 +1372,32 @@ AS
 BEGIN
     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA(codigo, comprador_id, fecha_venta, precio_venta,
                                                                     tipo_moneda, comision, anuncio_id)
-    SELECT DISTINCT m.VENTA_CODIGO,
-                    Comprador.id,
-                    m.VENTA_FECHA,
-                    m.VENTA_PRECIO_VENTA,
-                    TipoMoneda.id,
-                    m.VENTA_COMISION,
-                    Anuncio.codigo
-    FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_MONEDA TipoMoneda
-                  ON TipoMoneda.id = m.VENTA_MONEDA
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
-                  ON Anuncio.codigo = m.ANUNCIO_CODIGO
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA
-                  ON Persona.dni = m.COMPRADOR_DNI
-                      AND Persona.mail = m.COMPRADOR_MAIL
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.COMPRADOR Comprador
-                  ON Comprador.id = Persona.id
+    SELECT 
+    m.VENTA_CODIGO,
+    Comprador.id,
+    m.VENTA_FECHA,
+    m.VENTA_PRECIO_VENTA,
+    m.VENTA_MONEDA,
+    m.VENTA_COMISION,
+    m.ANUNCIO_CODIGO
+FROM gd_esquema.Maestra m
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA
+        ON Persona.dni = m.COMPRADOR_DNI
+        AND Persona.mail = m.COMPRADOR_MAIL
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.COMPRADOR Comprador
+        ON Comprador.persona_id = Persona.id
+    WHERE m.VENTA_CODIGO IS NOT NULL
+    GROUP BY m.VENTA_CODIGO,
+    Comprador.id,
+    m.VENTA_FECHA,
+    m.VENTA_PRECIO_VENTA,
+    m.VENTA_MONEDA,
+    m.VENTA_COMISION,
+    m.ANUNCIO_CODIGO
 END
 GO
+
+
 
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_ALQUILER
 AS
@@ -1409,16 +1414,13 @@ BEGIN
                     m.ALQUILER_DEPOSITO,
                     m.ALQUILER_COMISION,
                     m.ALQUILER_GASTOS_AVERIGUA,
-                    EstadoAlquiler.id,
-                    Anuncio.codigo
+                    m.ALQUILER_ESTADO,
+                    m.ANUNCIO_CODIGO
     FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ESTADO_ALQUILER EstadoAlquiler
-                  ON EstadoAlquiler.id = m.ALQUILER_ESTADO
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio ON Anuncio.codigo = m.ANUNCIO_CODIGO
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
-                  ON Persona.mail = m.INQUILINO_MAIL AND Persona.dni = m.INQUILINO_DNI
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO Inquilino
-                  ON Inquilino.id = Persona.id
+            JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+                ON Persona.mail = m.INQUILINO_MAIL AND Persona.dni = m.INQUILINO_DNI
+            JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO Inquilino
+                ON Inquilino.persona_id = Persona.id
 END
 GO
 
@@ -1431,9 +1433,7 @@ BEGIN
                     m.DETALLE_ALQ_NRO_PERIODO_FIN,
                     m.DETALLE_ALQ_PRECIO
     FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
-                  ON Alquiler.codigo = m.ALQUILER_CODIGO
-    WHERE m.DETALLE_ALQ_NRO_PERIODO_INI IS NOT NULL
+    WHERE m.ALQUILER_CODIGO IS NOT NULL
       AND m.DETALLE_ALQ_NRO_PERIODO_FIN IS NOT NULL
       AND m.DETALLE_ALQ_PRECIO IS NOT NULL
 END
@@ -1443,18 +1443,13 @@ CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_VENTA
 AS
 BEGIN
     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_VENTA(venta_id, importe, tipo_moneda, cotizacion, medio_pago)
-    SELECT DISTINCT Venta.codigo,
-                    m.PAGO_VENTA_IMPORTE,
-                    TipoMoneda.id,
-                    m.PAGO_VENTA_COTIZACION,
-                    MedioPago.id
+    SELECT  m.VENTA_CODIGO,
+            m.PAGO_VENTA_IMPORTE,
+            m.PAGO_VENTA_MONEDA,
+            m.PAGO_VENTA_COTIZACION,
+            m.PAGO_VENTA_MEDIO_PAGO
     FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_MONEDA TipoMoneda
-                  ON TipoMoneda.id = m.PAGO_VENTA_MONEDA
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MEDIO_PAGO MedioPago
-                  ON MedioPago.id = m.PAGO_VENTA_MEDIO_PAGO
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
-                  ON Venta.codigo = m.VENTA_CODIGO
+    WHERE m.VENTA_CODIGO IS NOT NULL
 END
 GO
 
@@ -1464,22 +1459,19 @@ BEGIN
     INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER(codigo, alquiler_id, fecha_pago,
                                                                             nro_periodo_pago, descripcion,
                                                                             fecha_inicio_pago, fecha_fin_pago, importe,
-                                                                            medio_pago, fecha_vencimiento)
-    SELECT DISTINCT m.PAGO_ALQUILER_CODIGO,
-                    Alquiler.codigo,
-                    m.PAGO_ALQUILER_FECHA,
-                    m.PAGO_ALQUILER_NRO_PERIODO,
-                    m.PAGO_ALQUILER_DESC,
-                    m.PAGO_ALQUILER_FEC_INI,
-                    m.PAGO_ALQUILER_FEC_FIN,
-                    m.PAGO_ALQUILER_IMPORTE,
-                    MedioPago.id,
-                    m.PAGO_ALQUILER_FECHA_VENCIMIENTO
+                                                                            medio_pago,  fecha_vencimiento)
+    SELECT  m.PAGO_ALQUILER_CODIGO,
+            m.ALQUILER_CODIGO,
+            m.PAGO_ALQUILER_FECHA,
+            m.PAGO_ALQUILER_NRO_PERIODO,
+            m.PAGO_ALQUILER_DESC,
+            m.PAGO_ALQUILER_FEC_INI,
+            m.PAGO_ALQUILER_FEC_FIN,
+            m.PAGO_ALQUILER_IMPORTE,
+            m.PAGO_ALQUILER_MEDIO_PAGO,
+            m.PAGO_ALQUILER_FECHA_VENCIMIENTO
     FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MEDIO_PAGO MedioPago
-                  ON MedioPago.id = m.PAGO_ALQUILER_MEDIO_PAGO
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
-                  ON Alquiler.codigo = m.ALQUILER_CODIGO
+    WHERE m.ALQUILER_CODIGO IS NOT NULL
 END
 GO
 -- Fin crear Procedimientos
@@ -1581,3 +1573,4 @@ GO
 EXEC LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_PAGO_ALQUILER
 GO
 -- Fin Invocaciones de procedimientos
+
