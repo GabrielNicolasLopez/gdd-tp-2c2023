@@ -1,0 +1,8 @@
+- Curso: K3571
+- Número de grupo: 1
+- Nombre y legajo de los integrantes:
+  - Gutierrez Filgueira, Mariano 1767379
+  - De Marco, Mauro 1678619
+  - Lopez, Gabriel 1756023
+  - Suh, Joel 1672319
+- Email del responsable del grupo: jsuh@frba.utn.edu.ar
