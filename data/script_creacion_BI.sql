@@ -174,44 +174,16 @@ SELECT DISTINCT a.fecha_finalizacion FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PER
 INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION(descripcion)
 SELECT DISTINCT a.tipo_operacion FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO a
 
-/* No funciona
-INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO(anuncio_id, tipo_operacion_id, barrio_id, ambientes_id, tiempo_id, fecha_alta_id)
+INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO(anuncio_id, tipo_operacion_id, barrio_id, ambientes_id, tiempo_id, fecha_alta_id, fecha_baja_id, promedio_dias)
 SELECT 
-    an.codigo,
-    op.id, 
-    ba.id, 
-    dim_amb.id, 
-    dim_t.id, 
-    dim_t.id 
-FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
-join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i 
-ON an.inmueble_id = i.codigo
-join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO b
-ON i.barrio_id = b.id
-join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION op 
-ON op.descripcion = an.tipo_operacion
-join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_AMBIENTES dim_amb 
-ON dim_amb.descripcion = i.ambientes
-join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_BARRIO ba 
-ON ba.descripcion = ba.descripcion
-join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_ANUNCIO_FECHA_ALTA fa 
-ON fa.descripcion = an.fecha_publicacion
-join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO dim_t 
-ON dim_t.anio = YEAR(an.fecha_publicacion) AND dim_t.cuatrimestre = BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(an.fecha_publicacion)
-*/
---select * from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO
-
-select * from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO
-
-INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO(anuncio_id, tipo_operacion_id, barrio_id, ambientes_id, tiempo_id, fecha_alta_id, fecha_baja_id)
-SELECT 
-    an.codigo,
-    op.id,
-    barrio_id,
-    dim_amb.id, 
-    dim_t.id, 
-    fa.id,
-    fb.id    
+    an.codigo as [codigo anuncio],
+    op.id as [operacionId],
+    barrio_id as [barrioId],
+    dim_amb.id as [ambienteId], 
+    dim_t.id as [tiempoId], 
+    fa.id as [fechaAltaId],
+    fb.id as [fechaBajaId],
+    DATEDIFF(DAY,an.fecha_publicacion, an.fecha_finalizacion) as [promedioDiasAnuncio]
 FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
 left join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i 
 ON an.inmueble_id = i.codigo
@@ -229,55 +201,20 @@ join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO dim_t
 ON dim_t.anio = YEAR(an.fecha_publicacion) 
 AND dim_t.cuatrimestre = BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(an.fecha_publicacion)
 
+--Cantidad de registros que deben tener cuatrimestre distinto de 1
 /*
-SELECT
-    an.codigo,
-    barrio_id 
-FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
-left join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i 
-ON an.inmueble_id = i.codigo
-left join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO b 
-ON i.barrio_id = b.id 
+select 
+    month(an.fecha_publicacion),
+    count(*)
+from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
+group by month(an.fecha_publicacion)
+having month(an.fecha_publicacion) > 4
 
-
-select count(*) from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO a
-where a.inmueble_id is not null 
-
-SELECT count(*) FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
+select * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
+where tiempo_id not in (10,11,13) -- todos los registros caen en 10(año 2024, cuatrimestre 1), 11 (2024	2), 12 (2027 1)
+select * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
+select * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_ANUNCIO_FECHA_ALTA
 */
-
-
---pruebita para chequear barrio
-/*
-select * 
-from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO a
-join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i on a.inmueble_id = i.codigo
-join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO b on i.barrio_id = b.id
-where a.codigo = 1560
-
-SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
-order by promedio_dias desc
-SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_ANUNCIO_FECHA_BAJA
-SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_BARRIO
-*/
---PRUEBAS
-/*
-select top 5 * from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.anuncio
-SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
-SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION
-
-SELECT 
-    i.codigo,
-    i.barrio_id,
-    an.inmueble_id
-FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
- join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i 
-ON an.inmueble_id = i.codigo
-join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO b
-ON i.barrio_id = b.id
-group by i.codigo,i.barrio_id, an.inmueble_id
-*/
-
 /********************
     EJERCICIO 01
 *********************/
@@ -290,22 +227,28 @@ AS
         tipo.descripcion as tipoOperacion,
         b.descripcion as barrio,
         a.descripcion as ambientes,
-        an.promedio_dias,
-        an.anuncio_id as anuncioCodigo
+        CEILING(SUM(an.promedio_dias)/COUNT(an.anuncio_id)) as promedioEnDias,
+        SUM(an.promedio_dias) as diasTotales,
+        COUNT(an.anuncio_id) as cantidadAnuncios
     from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO an
     join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipo on tipo.id = an.tipo_operacion_id
     join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_BARRIO b on b.id = an.barrio_id
     join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_AMBIENTES a on a.id = an.ambientes_id
     join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO t on t.id = an.tiempo_id
-    group by t.anio, t.cuatrimestre, b.descripcion, a.descripcion, an.promedio_dias, tipo.descripcion , an.anuncio_id, tipo.descripcion 
+    --where b.descripcion='Balvanera'
+    group by t.anio, t.cuatrimestre, b.descripcion, a.descripcion, tipo.descripcion
+    order by barrio,tipoOperacion
+
 GO
 
-
+/*
 select * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DURACION_PROMEDIO_ANUNCIOS
 where promedio_dias = 10
 
 select * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
 
-select a.fecha_publicacion from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO a
-group by a.fecha_publicacion
+select COUNT(*) from LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO a
+where a.fecha_finalizacion is null
+group by a.fecha_finalizacion
 order by 1 desc
+*/
