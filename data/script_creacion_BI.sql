@@ -66,6 +66,10 @@ IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2', 'U'
     DROP TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2
 GO
 
+IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE', 'U') IS NOT NULL
+    DROP TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE
+GO
+
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO', 'U') IS NOT NULL
     DROP TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
 GO
@@ -106,6 +110,10 @@ GO
 
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_RANGO_M2') IS NOT NULL
     DROP PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_RANGO_M2
+GO
+
+IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_INMUEBLE') IS NOT NULL
+    DROP PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_INMUEBLE
 GO
 
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO') IS NOT NULL
@@ -178,6 +186,13 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2
 )
 GO
 
+CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE
+(
+    tipo_inmueble_id          INT IDENTITY (1,1) PRIMARY KEY,
+    tipo_inmueble_descripcion NVARCHAR(255)
+)
+GO
+
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
 (
     anuncio_id            INT,
@@ -188,7 +203,8 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
     anuncio_fecha_alta_id INT,
     anuncio_fecha_baja_id INT,
     promedio_dias         INT,
-    rango_m2_id           INT
+    rango_m2_id           INT,
+    tipo_inmueble_id      INT
 )
 GO
 
@@ -251,6 +267,10 @@ GO
 
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
     ADD CONSTRAINT FK_HECHO_ANUNCIO_RANGO_M2_ID FOREIGN KEY (rango_m2_id) REFERENCES BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2 (rango_m2_id)
+GO
+
+ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE
+    ADD CONSTRAINT FK_HECHO_ANUNCIO_TIPO_INMUEBLE_ID FOREIGN KEY (tipo_inmueble_id) REFERENCES BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE (tipo_inmueble_id)
 GO
 
 --CREATE PROCEDURE
@@ -351,6 +371,15 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_INMUEBLE
+AS
+BEGIN
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE(tipo_inmueble_descripcion)
+    SELECT DISTINCT ti.id
+    FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_INMUEBLE ti
+END
+GO
+
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 AS
 BEGIN
@@ -358,7 +387,7 @@ BEGIN
                                                                                   barrio_id, ambientes_id, tiempo_id,
                                                                                   anuncio_fecha_alta_id,
                                                                                   anuncio_fecha_baja_id, promedio_dias,
-                                                                                  rango_m2_id)
+                                                                                  rango_m2_id, tipo_inmueble_id)
     SELECT an.codigo                                                  AS [codigo anuncio],
            op.tipo_operacion_id                                       AS [operacionId],
            barrio_id                                                  AS [barrioId],
@@ -367,20 +396,23 @@ BEGIN
            fa.anuncio_fecha_alta_id                                   AS [fechaAltaId],
            fb.anuncio_fecha_baja_id                                   AS [fechaBajaId],
            DATEDIFF(DAY, an.fecha_publicacion, an.fecha_finalizacion) AS [promedioDiasAnuncio],
-           r.rango_m2_id                                              AS [rangoM2]
+           r.rango_m2_id                                              AS [rangoM2],
+           ti.tipo_inmueble_id                                        AS [tipoInmueble]
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
-             LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i
                        ON an.inmueble_id = i.codigo
-             LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO b
+             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO b
                        ON i.barrio_id = b.id
-             LEFT JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION op
+             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION op
                        ON an.tipo_operacion = op.tipo_operacion_descripcion
-             LEFT JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_AMBIENTES dim_amb
+             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE ti
+                       ON ti.tipo_inmueble_descripcion = i.tipo_inmueble
+             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_AMBIENTES dim_amb
                        ON i.ambientes = dim_amb.ambientes_descripcion
-             RIGHT JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_ANUNCIO_FECHA_ALTA fa
-                        ON fa.anuncio_fecha_alta_descripcion = an.fecha_publicacion
-             RIGHT JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_ANUNCIO_FECHA_BAJA fb
-                        ON fb.anuncio_fecha_baja_descripcion = an.fecha_finalizacion
+             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_ANUNCIO_FECHA_ALTA fa
+                       ON fa.anuncio_fecha_alta_descripcion = an.fecha_publicacion
+             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_ANUNCIO_FECHA_BAJA fb
+                       ON fb.anuncio_fecha_baja_descripcion = an.fecha_finalizacion
              JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO dim_t
                   ON dim_t.anio = YEAR(an.fecha_publicacion)
                       AND dim_t.cuatrimestre =
@@ -422,6 +454,9 @@ EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_OPERACION
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_RANGO_M2
 --SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2
+
+EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_INMUEBLE
+--SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 --SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
