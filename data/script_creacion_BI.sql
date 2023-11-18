@@ -143,6 +143,10 @@ IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DURACION_PROMEDIO
     DROP VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DURACION_PROMEDIO_ANUNCIOS
 GO
 
+IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_ANUNCIOS', 'V') IS NOT NULL
+    DROP VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_ANUNCIOS
+GO
+
 --DROP ESQUEMA
 IF EXISTS (SELECT SCHEMA_NAME
            FROM INFORMATION_SCHEMA.SCHEMATA
@@ -230,6 +234,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO
     promedio_dias         INT,
     rango_m2_id           INT,
     tipo_inmueble_id      INT,
+    precio_publicado      INT,
     tipo_moneda_id        INT
 )
 GO
@@ -427,6 +432,7 @@ BEGIN
                                                                                   anuncio_fecha_alta_id,
                                                                                   anuncio_fecha_baja_id, promedio_dias,
                                                                                   rango_m2_id, tipo_inmueble_id,
+                                                                                  precio_publicado,
                                                                                   tipo_moneda_id)
     SELECT an.codigo                                                  AS [codigo anuncio],
            op.tipo_operacion_id                                       AS [operacionId],
@@ -438,6 +444,7 @@ BEGIN
            DATEDIFF(DAY, an.fecha_publicacion, an.fecha_finalizacion) AS [promedioDiasAnuncio],
            r.rango_m2_id                                              AS [rangoM2],
            ti.tipo_inmueble_id                                        AS [tipoInmueble],
+           an.precio_publicado                                        AS [precioPublicado],
            tm.tipo_moneda_id                                          AS [tipoMoneda]
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i
@@ -569,5 +576,63 @@ FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
 where b.descripcion = 'Agronomía'
   and a.id = '4 ambientes'
   and tipo.id = 'Tipo Operación Venta'
-  and an.fecha_publicacion
 group by b.descripcion, a.id, tipo.id
+
+/********************
+    EJERCICIO 02
+*********************/
+
+CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_ANUNCIOS
+AS
+select t.anio,
+       t.cuatrimestre,
+       tipoOp.tipo_operacion_descripcion                       AS tipoOperacion,
+       tipoInm.tipo_inmueble_descripcion                       AS tipoInmueble,
+       rangoM2.rango_m2_descripcion                            AS rangoM2,
+       SUM(an.precio_publicado)/count(an.anuncio_id)           AS precioPromedio,
+       SUM(an.precio_publicado)                                AS montoTotal,
+       count(an.anuncio_id)                                    AS cantidadAnuncios,
+       tipoMoneda.tipo_moneda_descripcion                      AS tipoMoneda
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHO_ANUNCIO an
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOp
+         on tipoOp.tipo_operacion_id = an.tipo_operacion_id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE tipoInm
+         on tipoInm.tipo_inmueble_id = an.tipo_inmueble_id 
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO t 
+         on t.tiempo_id = an.tiempo_id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2 rangoM2
+         on rangoM2.rango_m2_id = an.rango_m2_id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_MONEDA tipoMoneda
+         on tipoMoneda.tipo_moneda_id = an.tipo_moneda_id
+group by t.anio, 
+    t.cuatrimestre, 
+    tipoOp.tipo_operacion_descripcion, 
+    tipoInm.tipo_inmueble_descripcion, 
+    rangoM2.rango_m2_descripcion,
+    tipoMoneda.tipo_moneda_descripcion
+GO
+
+--validacion
+--2024	2	Tipo Operación Alquiler Contrato	Oficina	35-55	141600	283200	2	Moneda Pesos
+-- ha sido validado satisfactoriamente
+select * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_ANUNCIOS
+
+select
+       tipo.id,
+       precio_publicado
+       *
+--,SUM(DATEDIFF(DAY,an.fecha_publicacion, an.fecha_finalizacion)) AS diastotales
+FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO an
+         inner JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE i on an.inmueble_id = i.codigo
+         inner JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_OPERACION tipo on tipo.id = an.tipo_operacion
+         inner join LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_INMUEBLE tipoInm on tipoInm.id  = I.tipo_inmueble
+        JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO dim_t
+    ON dim_t.anio = YEAR(an.fecha_publicacion)
+        AND dim_t.cuatrimestre =
+            BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(an.fecha_publicacion)
+where tipo.id = 'Tipo Operación Alquiler Contrato'
+    and year(an.fecha_publicacion)=2024
+    and i.tipo_inmueble='Oficina'
+    and tiempo_id = 11
+    and superficie_total between 35 and 55
+group by tipo.id
