@@ -449,20 +449,20 @@ GO
 -- Inicio crear tablas
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DETALLE_IMPORTE_ALQ
 (
-    codigo             NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
-    alquiler_id        NUMERIC        NOT NULL,
-    nro_periodo_inicio NUMERIC        NULL,
-    nro_periodo_fin    NUMERIC        NULL,
+    codigo             NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
+    alquiler_id        NUMERIC(18, 0)       NOT NULL,
+    nro_periodo_inicio NUMERIC(18, 0)       NULL,
+    nro_periodo_fin    NUMERIC(18, 0)       NULL,
     precio             NUMERIC(18, 2) NULL,
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER
 (
-    codigo            NUMERIC PRIMARY KEY,
-    alquiler_id       NUMERIC        NOT NULL,
+    codigo            NUMERIC(18, 0)PRIMARY KEY,
+    alquiler_id       NUMERIC(18, 0)       NOT NULL,
     fecha_pago        DATETIME       NULL,
-    nro_periodo_pago  NUMERIC        NULL,
+    nro_periodo_pago  NUMERIC(18, 0)       NULL,
     descripcion       NVARCHAR(100)  NULL,
     fecha_inicio_pago DATETIME       NULL,
     fecha_fin_pago    DATETIME       NULL,
@@ -474,24 +474,24 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_VENTA
 (
-    codigo      NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
+    codigo      NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     importe     NUMERIC(18, 2) NULL,
     tipo_moneda NVARCHAR(100)  NOT NULL,
     cotizacion  NUMERIC(18, 2) NULL,
     medio_pago  NVARCHAR(100)  NOT NULL,
-    venta_id    NUMERIC        NOT NULL,
+    venta_id    NUMERIC(18, 0)       NOT NULL,
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE
 (
-    codigo           NUMERIC PRIMARY KEY,
+    codigo           NUMERIC(18, 0)PRIMARY KEY,
     tipo_inmueble    NVARCHAR(100),
     descripcion      NVARCHAR(100),
     direccion        NVARCHAR(100),
     nombre           NVARCHAR(100),
-    propietario_id   NUMERIC,
-    barrio_id        NUMERIC,
+    propietario_id   NUMERIC(18, 0),
+    barrio_id        NUMERIC(18, 0),
     ambientes        NVARCHAR(100),
     superficie_total numeric(18, 2),
     disposicion      NVARCHAR(100),
@@ -576,30 +576,30 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA
 (
-    id          NUMERIC IDENTITY (1, 1) PRIMARY KEY,
+    id          NUMERIC(18, 0)IDENTITY (1, 1) PRIMARY KEY,
     descripcion NVARCHAR(100),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD
 (
-    id           NUMERIC IDENTITY (1, 1) PRIMARY KEY,
-    provincia_id NUMERIC,
+    id           NUMERIC(18, 0)IDENTITY (1, 1) PRIMARY KEY,
+    provincia_id NUMERIC(18, 0),
     descripcion  NVARCHAR(100),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO
 (
-    id           NUMERIC IDENTITY (1, 1) PRIMARY KEY,
-    localidad_id NUMERIC,
+    id           NUMERIC(18, 0)IDENTITY (1, 1) PRIMARY KEY,
+    localidad_id NUMERIC(18, 0),
     descripcion  NVARCHAR(100)
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.CARACTERISTICA_X_INMUEBLE
 (
-    codigo_inmueble         NUMERIC,
+    codigo_inmueble         NUMERIC(18, 0),
     caracteristica_inmueble NVARCHAR(100),
     PRIMARY KEY (codigo_inmueble, caracteristica_inmueble),
 )
@@ -609,7 +609,7 @@ CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.SUCURSAL
 (
     codigo       NUMERIC(18, 0) PRIMARY KEY,
     direccion    NVARCHAR(100),
-    localidad_id NUMERIC,
+    localidad_id NUMERIC(18, 0),
     nombre       NVARCHAR(100),
     telefono     NVARCHAR(100),
 )
@@ -617,21 +617,21 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AGENTE
 (
-    id          NUMERIC(19, 0) IDENTITY (1, 1) PRIMARY KEY,
-    persona_id  NUMERIC,
-    sucursal_id NUMERIC,
+    id          NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
+    persona_id  NUMERIC(18, 0),
+    sucursal_id NUMERIC(18, 0),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO
 (
-    codigo                    NUMERIC(19, 0) PRIMARY KEY,
-    agente_id                 NUMERIC(19, 0),
+    codigo                    NUMERIC(18, 0) PRIMARY KEY,
+    agente_id                 NUMERIC(18, 0),
     costo_publicacion_anuncio NUMERIC(18, 2),
     estado_anuncio            NVARCHAR(100),
     fecha_finalizacion        DATETIME,
     fecha_publicacion         DATETIME,
-    inmueble_id               NUMERIC,
+    inmueble_id               NUMERIC(18, 0),
     precio_publicado          NUMERIC(18, 2),
     tipo_moneda               NVARCHAR(100),
     tipo_operacion            NVARCHAR(100),
@@ -641,34 +641,34 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA
 (
-    codigo       NUMERIC PRIMARY KEY,
-    comprador_id NUMERIC,
+    codigo       NUMERIC(18, 0) PRIMARY KEY,
+    comprador_id NUMERIC(18, 0),
     fecha_venta  DATETIME,
     precio_venta NUMERIC(18, 2),
     tipo_moneda  NVARCHAR(100),
     comision     NUMERIC(18, 2),
-    anuncio_id   NUMERIC(19, 0),
+    anuncio_id   NUMERIC(18, 0),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER
 (
-    codigo                NUMERIC PRIMARY KEY,
-    inquilino_id          NUMERIC,
+    codigo                NUMERIC(18, 0)PRIMARY KEY,
+    inquilino_id          NUMERIC(18, 0),
     fecha_inicio_alquiler DATETIME,
     fecha_fin_alquiler    DATETIME,
-    cant_periodos         NUMERIC,
+    cant_periodos         NUMERIC(18, 0),
     deposito              NUMERIC(18, 2),
     comision              NUMERIC(18, 2),
     gastos_averiguaciones NUMERIC(18, 2),
     estado_alquiler       NVARCHAR(100),
-    anuncio_id            NUMERIC(19, 0),
+    anuncio_id            NUMERIC(18, 0),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA
 (
-    id             NUMERIC IDENTITY (1, 1) PRIMARY KEY,
+    id             NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     apellido       NVARCHAR(100),
     dni            NUMERIC(18, 0),
     fecha_nac      DATETIME,
@@ -681,21 +681,21 @@ GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.COMPRADOR
 (
-    id         NUMERIC IDENTITY (1, 1) PRIMARY KEY,
-    persona_id NUMERIC,
+    id         NUMERIC(18, 0) IDENTITY(1, 1) PRIMARY KEY,
+    persona_id NUMERIC(18, 0),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO
 (
-    id         NUMERIC IDENTITY (1, 1) PRIMARY KEY,
+    id         NUMERIC(18, 0) IDENTITY(1, 1) PRIMARY KEY,
     persona_id NUMERIC(18, 0),
 )
 GO
 
 CREATE TABLE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO
 (
-    id         NUMERIC IDENTITY (1, 1) PRIMARY KEY,
+    id         NUMERIC(18, 0) IDENTITY(1, 1) PRIMARY KEY,
     persona_id NUMERIC(18, 0),
 )
 GO
@@ -913,34 +913,43 @@ GO
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_LOCALIDAD
 AS
 BEGIN
-    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD(descripcion)
-    SELECT DISTINCT m.INMUEBLE_LOCALIDAD
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD(provincia_id, descripcion)
+    SELECT DISTINCT 
+    (SELECT Provincia.id FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
+    WHERE Provincia.descripcion = m.INMUEBLE_PROVINCIA), 
+    m.INMUEBLE_LOCALIDAD
     FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
-                  ON Provincia.descripcion = m.INMUEBLE_PROVINCIA
+    WHERE m.INMUEBLE_BARRIO IS NOT NULL 
     UNION
-    SELECT DISTINCT m.SUCURSAL_LOCALIDAD
+    SELECT DISTINCT 
+    (SELECT Provincia.id FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
+    WHERE Provincia.descripcion = m.SUCURSAL_PROVINCIA),
+    m.SUCURSAL_LOCALIDAD
     FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
-                  ON Provincia.descripcion = m.SUCURSAL_PROVINCIA
-    WHERE m.INMUEBLE_LOCALIDAD IS NOT NULL
+    WHERE m.SUCURSAL_PROVINCIA IS NOT NULL 
     ORDER BY 1
 END
 GO
 
+--6783 barrios
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BARRIO
 AS
 BEGIN
-    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO(descripcion)
-    SELECT DISTINCT m.INMUEBLE_BARRIO
+    INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO(localidad_id, descripcion)
+    SELECT DISTINCT 
+        (SELECT Localidad.id FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD Localidad
+        JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
+            ON Localidad.provincia_id = Provincia.id
+        WHERE Localidad.descripcion = m.INMUEBLE_LOCALIDAD
+        AND Provincia.descripcion = m.INMUEBLE_PROVINCIA), --id localidad
+        m.INMUEBLE_BARRIO
     FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD Localidad
-                  ON Localidad.descripcion = m.INMUEBLE_LOCALIDAD
     WHERE m.INMUEBLE_BARRIO IS NOT NULL
-    GROUP BY m.INMUEBLE_BARRIO
-    ORDER BY 1
+    -- GROUP BY Localidad.id, m.INMUEBLE_BARRIO
+    ORDER BY 2
 END
 GO
+
 
 CREATE PROCEDURE LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_SUCURSAL
 AS
@@ -1131,29 +1140,34 @@ BEGIN
                                                                        direccion, propietario_id, barrio_id, ambientes,
                                                                        superficie_total, disposicion, orientacion,
                                                                        estado_inmueble, antiguedad, expensas)
-    SELECT DISTINCT m.INMUEBLE_CODIGO,
-                    m.INMUEBLE_TIPO_INMUEBLE,
-                    m.INMUEBLE_DESCRIPCION,
-                    m.INMUEBLE_NOMBRE,
-                    m.INMUEBLE_DIRECCION,
-                    Propietario.id,
-                    Barrio.id,
-                    m.INMUEBLE_CANT_AMBIENTES,
-                    m.INMUEBLE_SUPERFICIETOTAL,
-                    m.INMUEBLE_DISPOSICION,
-                    m.INMUEBLE_ORIENTACION,
-                    m.INMUEBLE_ESTADO,
-                    m.INMUEBLE_ANTIGUEDAD,
-                    m.INMUEBLE_EXPESAS
-    FROM gd_esquema.Maestra m
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
-                  ON Persona.mail = m.PROPIETARIO_MAIL
-                      AND m.PROPIETARIO_DNI = Persona.dni
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO Propietario
-                  ON Propietario.persona_id = Persona.id
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio
-                  ON Barrio.descripcion = m.INMUEBLE_BARRIO
-    ORDER BY 1
+    SELECT DISTINCT 
+    m.INMUEBLE_CODIGO,
+    m.INMUEBLE_TIPO_INMUEBLE,
+    m.INMUEBLE_DESCRIPCION,
+    m.INMUEBLE_NOMBRE,
+    m.INMUEBLE_DIRECCION,
+    Propietario.id as propietario_id,
+    (SELECT Barrio.id FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD Localidad
+        ON Barrio.localidad_id = Localidad.id
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
+        ON Localidad.provincia_id = Provincia.id
+    WHERE Barrio.descripcion = m.INMUEBLE_BARRIO
+    AND Localidad.descripcion = m.INMUEBLE_LOCALIDAD
+    AND Provincia.descripcion = m.INMUEBLE_PROVINCIA),
+    m.INMUEBLE_CANT_AMBIENTES,
+    m.INMUEBLE_SUPERFICIETOTAL,
+    m.INMUEBLE_DISPOSICION,
+    m.INMUEBLE_ORIENTACION,
+    m.INMUEBLE_ESTADO,
+    m.INMUEBLE_ANTIGUEDAD,
+    m.INMUEBLE_EXPESAS
+FROM gd_esquema.Maestra m
+LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+    ON Persona.mail = m.PROPIETARIO_MAIL AND m.PROPIETARIO_DNI = Persona.dni
+LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROPIETARIO Propietario
+    ON Propietario.persona_id = Persona.id
+WHERE m.INMUEBLE_CODIGO IS NOT NULL
 END
 GO
 
