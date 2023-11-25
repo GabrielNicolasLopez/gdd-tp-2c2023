@@ -1041,7 +1041,7 @@ AS
         Tiempo.cuatrimestre,
         hechosOperacion.sucursal_id,
         hechosOperacion.tipo_moneda_id,
-        hechosOperacion.precio_publicado
+        SUM(hechosOperacion.precio_publicado) AS montoTotal
     FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION hechosOperacion
     JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO2 Tiempo
         ON hechosOperacion.tiempo_id = Tiempo.id
@@ -1053,3 +1053,5 @@ AS
 GO
 
 -- SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MONTO_CONTRATOS_CERRADOS
+
+-- DROP VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MONTO_CONTRATOS_CERRADOS
