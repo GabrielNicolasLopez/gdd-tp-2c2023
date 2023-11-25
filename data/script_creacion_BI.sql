@@ -926,9 +926,14 @@ mismo. El porcentaje es en función del total de pagos en dicho periodo.
 --     SELECT
 --         Tiempo.mes,
 --         Tiempo.anio,
---         COUNT(CASE WHEN hechosAlquiler.fecha_pago > hechosAlquiler.fecha_vencimiento THEN 1 ELSE NULL END)
+-- --         COUNT(CASE WHEN hechosAlquiler.fecha_pago > hechosAlquiler.fecha_vencimiento THEN 1 ELSE NULL END)
+-- --         /
+-- --         COUNT(*) AS '%Incumplimiento'
+
+--         convert(DECIMAL(6,3),
+--         (convert(DECIMAL(6,2), COUNT(CASE WHEN hechosAlquiler.fecha_pago > hechosAlquiler.fecha_vencimiento THEN 1 ELSE NULL END))
 --         /
---         COUNT(*) AS '%Incumplimiento'
+--         convert(DECIMAL(6,2), COUNT(*)))*100) as '%Incumplimiento'
 --     FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER hechosAlquiler
 --     JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
 --         ON hechosAlquiler.tiempo_id = Tiempo.id
