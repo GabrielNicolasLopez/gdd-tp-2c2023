@@ -282,8 +282,8 @@ GO
 
 --DROP ESQUEMA
 IF EXISTS (SELECT SCHEMA_NAME
-           FROM INFORMATION_SCHEMA.SCHEMATA
-           WHERE SCHEMA_NAME = 'BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO')
+            FROM INFORMATION_SCHEMA.SCHEMATA
+            WHERE SCHEMA_NAME = 'BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO')
     DROP SCHEMA BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO
 GO
 
@@ -1062,13 +1062,14 @@ la localidad para cada cuatrimestre/año. Se calcula en función de las ventas
 concretadas.
 */
 
--- CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_M2
+-- ALTER VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_M2
 -- AS
 --     SELECT
 --         hechosVenta.tipo_inmueble_id,
 --         Ubicacion.localidad,
 --         Tiempo.cuatrimestre,
---         Tiempo.anio
+--         Tiempo.anio,
+--         SUM(hechosVenta.precio)/SUM(hechosVenta.m2) AS Promedio
 --     FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA hechosVenta
 --     JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
 --         ON hechosVenta.tiempo_id = Tiempo.id
