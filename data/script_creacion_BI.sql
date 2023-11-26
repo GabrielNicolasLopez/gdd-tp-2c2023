@@ -396,6 +396,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
     anuncio_id          NUMERIC(18, 0),
     fecha_pago          DATETIME,
     fecha_vencimiento   DATETIME,
+    rango_etario_id     NUMERIC(18, 0),
     PRIMARY KEY (tiempo_id, anuncio_id, fecha_pago, fecha_vencimiento)
 )
 GO
@@ -830,12 +831,13 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER (anuncio_id, tiempo_id, fecha_pago, fecha_vencimiento)
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER (anuncio_id, tiempo_id, fecha_pago, fecha_vencimiento, rango_etario_id)
     SELECT 
         pagoAlquiler.alquiler_id,
         Tiempo.id,
         pagoAlquiler.fecha_pago,
-        pagoAlquiler.fecha_vencimiento
+        pagoAlquiler.fecha_vencimiento,
+        rangoEtario.rango_etario_id
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER pagoAlquiler
     --Tiempo
     JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
@@ -848,6 +850,15 @@ BEGIN
     --     ON pagoAlquiler.alquiler_id = Alquiler.codigo
     -- JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
     --     ON Alquiler.anuncio_id = Anuncio.codigo
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
+    ON pagoAlquiler.alquiler_id = Alquiler.codigo
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INQUILINO inquilino
+    ON Alquiler.inquilino_id = inquilino.id
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+    ON inquilino.persona_id = Persona.id
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario
+    ON rangoEtario.rango_etario_id =
+        BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_ETARIO(DATEDIFF(YEAR, Persona.fecha_nac, GETDATE())) 
 END
 GO
 
@@ -1008,7 +1019,31 @@ inquilinos para cada cuatrimestre/año. Se calcula en función de los alquileres
 dados de alta en dicho periodo.
 */
 
+CREATE VIEW BI_M_AL_CUBO.CATEGORIAS_MAS_VENDIDAS
+AS
+SELECT TIEMPO_ANIO, TIEMPO_MES, DESCRIPCION_CATEGORIA, RANGO_EDAD_DESCRIPCION 
+FROM 
+(SELECT ROW_NUMBER() OVER (PARTITION BY T.TIEMPO_ANIO, T.TIEMPO_MES, ID_RANGO_EDAD ORDER BY SUM(UNIDADES) DESC ) E,T.TIEMPO_ANIO, T.TIEMPO_MES, RE.RANGO_EDAD_DESCRIPCION, C.DESCRIPCION_CATEGORIA, SUM(UNIDADES)UNIDADES FROM BI_M_AL_CUBO.BI_HECHO_VENTA
+	JOIN BI_M_AL_CUBO.BI_TIEMPO T ON ID_TIEMPO = T.TIEMPO_ID
+	JOIN BI_M_AL_CUBO.BI_CATEGORIA C ON C.CATEGORIA_ID = CATEGORIA_ID 
+	JOIN BI_M_AL_CUBO.BI_RANGO_EDAD RE ON RE.RANGO_EDAD_ID = ID_RANGO_EDAD
+	GROUP BY T.TIEMPO_ANIO, T.TIEMPO_MES, C.DESCRIPCION_CATEGORIA, ID_RANGO_EDAD,RE.RANGO_EDAD_DESCRIPCION) E WHERE E <= 5 AND E > 0
+GO
 
+--hay que agregar inquilino id al hecho alquiler
+select top 10 * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
+
+SELECT ROW_NUMBER() OVER (PARTITION BY T.TIEMPO_ANIO, T.TIEMPO_MES, ID_RANGO_EDAD ORDER BY SUM(UNIDADES) DESC ) E
+    , tiempo.cuatrimestre
+    , tiempo.cuatrimestre
+    , rango_etario_descripcion
+    , SUM(UNIDADES)UNIDADES 
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER hechoAlquiler
+join BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario on hechoAlquiler.rango_etario_id = rangoEtario.rango_etario_id
+JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO tiempo ON  hechoAlquiler.tiempo_id = tiempo.id
+JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_UBICACION Ubicacion
+ON Ubicacion.id = hechoAlquiler.
+GROUP BY tiempo.cuatrimestre, tiempo.anio, rango_etario_descripcion
 
 
 /********************
