@@ -897,23 +897,25 @@ BEGIN
                                                                                      fecha_vencimiento, rango_etario_id,
                                                                                      montoActual, montoAnterior,
                                                                                      estado_alquiler)
-    SELECT DISTINCT Tiempo.id as Tiempo,
+    SELECT DISTINCT Tiempo.id                                           as Tiempo,
                     Ubicacion.id,
                     pagoAlquilerActual.fecha_pago,
                     pagoAlquilerActual.fecha_vencimiento,
                     rangoEtario.rango_etario_id,
-                    (SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
-                    WHERE MONTH(PA.fecha_pago) = MONTH('2027/01/03')
-                    AND YEAR(PA.fecha_pago) = YEAR('2027/01/03')
-                    AND PA.alquiler_id = Alquiler.codigo) AS montoActual,
-                    (SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
-                    WHERE MONTH(PA.fecha_pago) = MONTH(DATEADD(MONTH, -1, '2027/01/03'))
-                    AND YEAR(PA.fecha_pago) = YEAR(DATEADD(MONTH, -1, '2027/01/03'))
-                    AND PA.alquiler_id = Alquiler.codigo) AS montoAnterior,
+                    ISNULL((SELECT PA.importe
+                            FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+                            WHERE MONTH(PA.fecha_pago) = MONTH(GETDATE())
+                              AND YEAR(PA.fecha_pago) = YEAR(GETDATE())
+                              AND PA.alquiler_id = Alquiler.codigo), 0) AS montoActual,
+                    ISNULL((SELECT PA.importe
+                            FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+                            WHERE MONTH(PA.fecha_pago) = MONTH(DATEADD(MONTH, -1, GETDATE()))
+                              AND YEAR(PA.fecha_pago) = YEAR(DATEADD(MONTH, -1, GETDATE()))
+                              AND PA.alquiler_id = Alquiler.codigo), 0) AS montoAnterior,
                     EstadoAlquiler.id
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER pagoAlquilerActual
-                  ON Alquiler.codigo = pagoAlquilerActual.alquiler_id 
+                  ON Alquiler.codigo = pagoAlquilerActual.alquiler_id
              JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
                   ON Tiempo.anio = YEAR(pagoAlquilerActual.fecha_pago)
                       AND Tiempo.cuatrimestre =
@@ -1103,7 +1105,7 @@ FROM (SELECT RangoEtario.rango_etario_descripcion,
              Tiempo.anio,
              Ubicacion.barrio,
              ROW_NUMBER() OVER (PARTITION BY RangoEtario.rango_etario_descripcion, Tiempo.cuatrimestre, Tiempo.anio, Ubicacion.barrio
-                 ORDER BY COUNT(HechosAlquiler.anuncio_id) DESC) AS Posicion
+                 ORDER BY COUNT(*) DESC) AS Posicion
       FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER HechosAlquiler
                JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO RangoEtario
                     ON HechosAlquiler.rango_etario_id = RangoEtario.rango_etario_id
