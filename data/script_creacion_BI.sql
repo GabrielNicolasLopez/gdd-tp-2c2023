@@ -430,7 +430,7 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
 (
-    anuncio_id        NUMERIC(18, 0),
+    -- anuncio_id        NUMERIC(18, 0),
     tiempo_id         NUMERIC(18, 0),
     ubicacion_id      NUMERIC(18, 0),
     fecha_pago        DATETIME,
@@ -439,7 +439,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
     montoActual       NUMERIC(18, 2),
     montoAnterior     NUMERIC(18, 2),
     estado_alquiler   NVARCHAR(100),
-    PRIMARY KEY (anuncio_id, tiempo_id, ubicacion_id, fecha_pago, fecha_vencimiento, rango_etario_id, montoActual,
+    PRIMARY KEY (tiempo_id, ubicacion_id, fecha_pago, fecha_vencimiento, rango_etario_id, montoActual,
                  montoAnterior, estado_alquiler)
 )
 GO
@@ -892,25 +892,28 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER (anuncio_id, tiempo_id,
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER (tiempo_id,
                                                                                      ubicacion_id, fecha_pago,
                                                                                      fecha_vencimiento, rango_etario_id,
                                                                                      montoActual, montoAnterior,
                                                                                      estado_alquiler)
-    SELECT DISTINCT Alquiler.codigo,
-                    Tiempo.id as Tiempo,
+    SELECT DISTINCT Tiempo.id as Tiempo,
                     Ubicacion.id,
                     pagoAlquilerActual.fecha_pago,
                     pagoAlquilerActual.fecha_vencimiento,
                     rangoEtario.rango_etario_id,
-                    pagoAlquilerActual.importe,
-                    pagoAlquilerAnterior.importe,
+                    (SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+                    WHERE MONTH(PA.fecha_pago) = MONTH('2027/01/03')
+                    AND YEAR(PA.fecha_pago) = YEAR('2027/01/03')
+                    AND PA.alquiler_id = Alquiler.codigo) AS montoActual,
+                    (SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+                    WHERE MONTH(PA.fecha_pago) = MONTH(DATEADD(MONTH, -1, '2027/01/03'))
+                    AND YEAR(PA.fecha_pago) = YEAR(DATEADD(MONTH, -1, '2027/01/03'))
+                    AND PA.alquiler_id = Alquiler.codigo) AS montoAnterior,
                     EstadoAlquiler.id
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER pagoAlquilerActual
-                  ON Alquiler.codigo = pagoAlquilerActual.alquiler_id
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER pagoAlquilerAnterior
-                  ON Alquiler.codigo = pagoAlquilerAnterior.alquiler_id
+                  ON Alquiler.codigo = pagoAlquilerActual.alquiler_id 
              JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
                   ON Tiempo.anio = YEAR(pagoAlquilerActual.fecha_pago)
                       AND Tiempo.cuatrimestre =
@@ -941,6 +944,16 @@ BEGIN
                      BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_ETARIO(DATEDIFF(YEAR, Persona.fecha_nac, GETDATE()))
 END
 GO
+
+-- SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+-- WHERE MONTH(PA.fecha_pago) = MONTH('2027/01/03')
+-- AND YEAR(PA.fecha_pago) = YEAR('2027/01/03')
+-- AND PA.alquiler_id = 151516
+
+-- SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+-- WHERE MONTH(PA.fecha_pago) = MONTH(DATEADD(MONTH, -1, '2027/01/03'))
+-- AND YEAR(PA.fecha_pago) = YEAR(DATEADD(MONTH, -1, '2027/01/03'))
+-- AND PA.alquiler_id = 151516
 
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 AS
