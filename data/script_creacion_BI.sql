@@ -409,7 +409,7 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
 (
-    anuncio_id            NUMERIC(18, 0),
+    -- anuncio_id            NUMERIC(18, 0),
     tipo_operacion_id     NUMERIC(18, 0),
     ubicacion_id          NUMERIC(18, 0),
     ambientes_id          NUMERIC(18, 0),
@@ -421,7 +421,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
     precio_publicado      NUMERIC(18, 0),
     tipo_moneda_id        NVARCHAR(100),
     dias_publicacion      NUMERIC(18, 0)
-        PRIMARY KEY (anuncio_id, tipo_operacion_id, ubicacion_id, ambientes_id,
+        PRIMARY KEY (/*anuncio_id,*/ tipo_operacion_id, ubicacion_id, ambientes_id,
                      tiempo_id, anuncio_fecha_alta_id, anuncio_fecha_baja_id,
                      rango_m2_id, tipo_inmueble_id, precio_publicado, tipo_moneda_id,
                      dias_publicacion)
@@ -446,19 +446,19 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA
 (
-    anuncio_id       NUMERIC(18, 0),
+    -- anuncio_id       NUMERIC(18, 0),
     tiempo_id        NUMERIC(18, 0),
     ubicacion_id     NUMERIC(18, 0),
     tipo_inmueble_id NVARCHAR(100),
     m2               NUMERIC(18, 0),
     precio           NUMERIC(18, 0)
-        PRIMARY KEY (tiempo_id, anuncio_id, ubicacion_id, tipo_inmueble_id)
+        PRIMARY KEY (tiempo_id/*, anuncio_id*/, ubicacion_id, tipo_inmueble_id)
 )
 GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION
 (
-    anuncio_id        NUMERIC(18, 0),
+    -- anuncio_id        NUMERIC(18, 0),
     tiempo_id         NUMERIC(18, 0),
     sucursal_id       NUMERIC(18, 0),
     tipo_operacion_id NUMERIC(18, 0),
@@ -466,7 +466,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACIO
     rango_etario_id   NUMERIC(18, 0),
     tipo_moneda_id    NVARCHAR(100),
     precio_publicado  NUMERIC(18, 0)
-        PRIMARY KEY (anuncio_id, tiempo_id, sucursal_id, tipo_operacion_id, comision, rango_etario_id, tipo_moneda_id,
+        PRIMARY KEY (/*anuncio_id, */tiempo_id, sucursal_id, tipo_operacion_id, comision, rango_etario_id, tipo_moneda_id,
                      precio_publicado)
 )
 GO
@@ -801,14 +801,15 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO (anuncio_id, tipo_operacion_id,
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO (/*anuncio_id,*/ tipo_operacion_id,
                                                                                     ubicacion_id, ambientes_id,
                                                                                     tiempo_id, anuncio_fecha_alta_id,
                                                                                     anuncio_fecha_baja_id,
                                                                                     dias_publicacion, rango_m2_id,
                                                                                     tipo_inmueble_id, precio_publicado,
                                                                                     tipo_moneda_id)
-    SELECT Anuncio.codigo                                                       AS [codigo anuncio],
+    SELECT 
+            -- Anuncio.codigo                                                       AS [codigo anuncio],
            tipoOperacion.tipo_operacion_id                                      AS [operacionId],
            Ubicacion.id                                                         AS [Ubicacion],
            Ambientes.ambientes_id                                               AS [ambienteId],
@@ -859,8 +860,9 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA (anuncio_id, tiempo_id, tipo_inmueble_id, ubicacion_id, m2, precio)
-    SELECT Venta.anuncio_id,
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA (/*anuncio_id,*/ tiempo_id, tipo_inmueble_id, ubicacion_id, m2, precio)
+    SELECT 
+    -- Venta.anuncio_id,
            Tiempo.id,
            Inmueble.tipo_inmueble,
            Ubicacion.id,
@@ -947,24 +949,15 @@ BEGIN
 END
 GO
 
--- SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
--- WHERE MONTH(PA.fecha_pago) = MONTH('2027/01/03')
--- AND YEAR(PA.fecha_pago) = YEAR('2027/01/03')
--- AND PA.alquiler_id = 151516
-
--- SELECT PA.importe FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
--- WHERE MONTH(PA.fecha_pago) = MONTH(DATEADD(MONTH, -1, '2027/01/03'))
--- AND YEAR(PA.fecha_pago) = YEAR(DATEADD(MONTH, -1, '2027/01/03'))
--- AND PA.alquiler_id = 151516
-
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION (anuncio_id, tiempo_id,
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION (/*anuncio_id,*/ tiempo_id,
                                                                                       sucursal_id, tipo_operacion_id,
                                                                                       comision, rango_etario_id,
                                                                                       tipo_moneda_id, precio_publicado)
-    SELECT Anuncio.codigo,
+    SELECT 
+    -- Anuncio.codigo,
            Tiempo.id,
            Agente.sucursal_id,
            tipoOperacion.tipo_operacion_id,
