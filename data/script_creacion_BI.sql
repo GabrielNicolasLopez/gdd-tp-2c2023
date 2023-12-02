@@ -429,12 +429,12 @@ GO
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA
 (
     --PK's---------------------------------
-    tiempo_id        NUMERIC(18, 0),
-    ubicacion_id     NUMERIC(18, 0),
-    tipo_inmueble_id NVARCHAR(100),
+    tiempo_id         NUMERIC(18, 0),
+    ubicacion_id      NUMERIC(18, 0),
+    tipo_inmueble_id  NVARCHAR(100),
     --Calculables--------------------------
-    m2               NUMERIC(18, 0), --lo que hay que hacer aca es poner totalm2
-    precio           NUMERIC(18, 0)  --y poner totalPrecio y con esos datos en la view calcular el AVG
+    sum_m2            NUMERIC(18, 0),
+    sum_precio_venta  NUMERIC(18, 0),
     
     PRIMARY KEY (tiempo_id, ubicacion_id, tipo_inmueble_id)
 )
@@ -876,16 +876,20 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA (tiempo_id, tipo_inmueble_id, ubicacion_id, m2, precio)
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA (tiempo_id, 
+                                                                                  tipo_inmueble_id, 
+                                                                                  ubicacion_id, 
+                                                                                  sum_m2, 
+                                                                                  sum_precio_venta)
     SELECT 
         --PK's---------------------------------------------------------------------------------------------
-        Tiempo.id                       AS Tiempo,
-        Inmueble.tipo_inmueble          AS tipoInmueble,
-        Ubicacion.id                    AS Ubicacion,
+        Tiempo.id                       AS tiempo_id,
+        Inmueble.tipo_inmueble          AS tipo_inmueble_id,
+        Ubicacion.id                    AS ubicacion_id,
         --Calculables--------------------------------------------------------------------------------------
         --Luego en la view podemos calcular el promedio de cuanto cuesta el m2 de cada barrio
-        SUM(Inmueble.superficie_total)  AS supTotal,
-        SUM(Venta.precio_venta)         AS montoTotal
+        SUM(Inmueble.superficie_total)  AS sum_m2,
+        SUM(Venta.precio_venta)         AS sum_precio_venta
 
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
     --Tiempo
