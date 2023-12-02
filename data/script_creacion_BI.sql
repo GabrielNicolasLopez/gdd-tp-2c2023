@@ -422,7 +422,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
     rango_m2_id             NUMERIC(18, 0),
     tipo_moneda_id          NVARCHAR(100),
     --Calculables-------------------------------
-    sum_dias_publicados     NUMERIC(18, 0), 
+    sum_dias_publicados     NUMERIC(18, 0),
     sum_precios_publicados  NUMERIC(18, 0),
     cant_anuncios           NUMERIC(18, 0),
     PRIMARY KEY (tipo_operacion_id, ubicacion_id, ambientes_id,
@@ -439,7 +439,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA
     --Calculables--------------------------
     sum_m2            NUMERIC(18, 0),
     sum_precio_venta  NUMERIC(18, 0),
-    
+
     PRIMARY KEY (tiempo_id, ubicacion_id, tipo_inmueble_id)
 )
 GO
@@ -476,13 +476,13 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACIO
     tipo_moneda_id          NVARCHAR(100),
     --Calculables--------------------------
     estadoAnuncio           NVARCHAR(100),
-    montoTotalComisiones    NUMERIC(18, 0), --con este 
+    montoTotalComisiones    NUMERIC(18, 0), --con este
     cantidadComisiones      NUMERIC(18, 0), --y este calculamos el valor promedio de comisiones
-    opsConcretadas          NUMERIC(18, 0), --con este 
+    opsConcretadas          NUMERIC(18, 0), --con este
     opsTotales              NUMERIC(18, 0), --y este calculamos el % de ops concretadas
     montoContratosCerrados  NUMERIC(18, 0), --sumamos el monto de contratos cerrados
-    
-    PRIMARY KEY (tiempo_id, sucursal_id, tipo_operacion_id, 
+
+    PRIMARY KEY (tiempo_id, sucursal_id, tipo_operacion_id,
     rango_etario_id, tipo_moneda_id)
 )
 GO
@@ -889,19 +889,19 @@ BEGIN
     JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2 Rango
         ON Rango.rango_m2_id =
             BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_M2(Inmueble.superficie_total)
-    GROUP BY tipoOperacion.tipo_operacion_id, Ubicacion.id,Ambientes.ambientes_id, Tiempo.id, tipoInmueble.id, Rango.rango_m2_id, tipoMoneda.id                  
+    GROUP BY tipoOperacion.tipo_operacion_id, Ubicacion.id,Ambientes.ambientes_id, Tiempo.id, tipoInmueble.id, Rango.rango_m2_id, tipoMoneda.id
 END
-GO                                              
+GO
 
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA (tiempo_id, 
-                                                                                  tipo_inmueble_id, 
-                                                                                  ubicacion_id, 
-                                                                                  sum_m2, 
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA (tiempo_id,
+                                                                                  tipo_inmueble_id,
+                                                                                  ubicacion_id,
+                                                                                  sum_m2,
                                                                                   sum_precio_venta)
-    SELECT 
+    SELECT
         --PK's---------------------------------------------------------------------------------------------
         Tiempo.id                       AS tiempo_id,
         Inmueble.tipo_inmueble          AS tipo_inmueble_id,
@@ -933,8 +933,8 @@ BEGIN
         ON Ubicacion.barrio = Barrio.descripcion
             AND Ubicacion.localidad = Localidad.descripcion
             AND Ubicacion.provincia = Provincia.descripcion
-    
-    GROUP BY Tiempo.id, Inmueble.tipo_inmueble, Ubicacion.id    
+
+    GROUP BY Tiempo.id, Inmueble.tipo_inmueble, Ubicacion.id
 END
 GO
 
@@ -951,9 +951,9 @@ BEGIN
                                                                                     rango_etario_id,
                                                                                     estado_alquiler,
                                                                                     cant_pagos_atrasados,
-                                                                                    cant_pagos,
-                                                                                    sum_incrementos,
-                                                                                    cant_incrementos)
+                                                                                    cant_pagos)
+                                                                                    --sum_incrementos,
+                                                                                    --cant_incrementos)
     SELECT
         --PK's---------------------------------------------------------------------------------------------
         Tiempo.id                                           AS tiempo_id,
@@ -964,8 +964,8 @@ BEGIN
         -- COUNT(CASE WHEN pagoAlquilerActual.fecha_pago > pagoAlquilerActual.fecha_vencimiento THEN 1 END) AS cant_pagos_atrasados,
         -- COUNT(pagoAlquilerActual.fecha_pago)                                                             AS cant_pagos,
 
-        (BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo, MONTH('2024/12/01'), YEAR('2024/12/01'))) AS montoActual,
-        (BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo, MONTH(DATEADD(MONTH, -1, '2024/12/01')), YEAR(DATEADD(MONTH, -1, '2024/12/01')))) AS montoAnterior
+        (ISNULL(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo, MONTH('2024/12/01'), YEAR('2024/12/01')), 0)) AS montoActual,
+        (ISNULL(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo, MONTH(DATEADD(MONTH, -1, '2024/12/01')), YEAR(DATEADD(MONTH, -1, '2024/12/01'))), 0)) AS montoAnterior
         -- ISNULL((SELECT PA.importe
         --         FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
         --         WHERE MONTH(PA.fecha_pago) = MONTH(GETDATE())
@@ -1009,7 +1009,7 @@ BEGIN
     JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario
         ON rangoEtario.rango_etario_id =
             BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_ETARIO(DATEDIFF(YEAR, Persona.fecha_nac, GETDATE()))
-    GROUP BY Tiempo.id, Ubicacion.id, rangoEtario.rango_etario_id, EstadoAlquiler.id
+    -- GROUP BY Tiempo.id, Ubicacion.id, rangoEtario.rango_etario_id, EstadoAlquiler.id
 END
 GO
 
@@ -1034,8 +1034,8 @@ BEGIN
         SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))               AS montoTotalComisiones
         -- COUNT(CASE WHEN (SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0) THEN 1  END)                                                             AS cantidadComisiones
         -- COUNT(
-        -- CASE WHEN SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) 
-        -- = 0 THEN 1 END)                                                             AS cantidadComisiones   
+        -- CASE WHEN SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))
+        -- = 0 THEN 1 END)                                                             AS cantidadComisiones
 
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
     --Comision de venta
@@ -1092,11 +1092,11 @@ EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_MONEDA
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_SUCURSAL
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
+-- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 
 -- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 
--- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
+EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 
 -- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 
