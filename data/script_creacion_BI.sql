@@ -409,7 +409,7 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
 (
-    anuncio_id            NUMERIC(18, 0),
+    -- anuncio_id            NUMERIC(18, 0),
     tipo_operacion_id     NUMERIC(18, 0),
     ubicacion_id          NUMERIC(18, 0),
     ambientes_id          NUMERIC(18, 0),
@@ -419,7 +419,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
     tipo_moneda_id        NVARCHAR(100),
     dias_publicacion      NUMERIC(18, 0),
     precio_publicado      NUMERIC(18, 0),
-    PRIMARY KEY (anuncio_id, tipo_operacion_id, ubicacion_id, ambientes_id,
+    PRIMARY KEY (/*anuncio_id,*/ tipo_operacion_id, ubicacion_id, ambientes_id,
                 tiempo_id, tipo_inmueble_id, rango_m2_id, tipo_moneda_id)
 )
 GO
@@ -797,8 +797,7 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO (anuncio_id,
-                                                                                    tipo_operacion_id,
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO (tipo_operacion_id,
                                                                                     ubicacion_id,
                                                                                     ambientes_id,
                                                                                     tiempo_id,
@@ -808,50 +807,55 @@ BEGIN
                                                                                     dias_publicacion,
                                                                                     precio_publicado)
     SELECT
-        Anuncio.codigo                                                       AS [anuncioID],
-        tipoOperacion.tipo_operacion_id                                      AS [operacionId],
-        Ubicacion.id                                                         AS [Ubicacion],
-        Ambientes.ambientes_id                                               AS [ambienteId],
-        Tiempo.id                                                            AS [tiempoId],
-        tipoInmueble.id                                                      AS [tipoInmueble],
-        Rango.rango_m2_id                                                    AS [rangoM2],
-        tipoMoneda.id                                                        AS [tipoMoneda],
-        DATEDIFF(DAY, Anuncio.fecha_publicacion, Anuncio.fecha_finalizacion) AS [promedioDiasAnuncio],
-        Anuncio.precio_publicado                                             AS [precioPublicado]
+        --PK's---------------------------------------------------------------------------------------------
+        tipoOperacion.tipo_operacion_id                                           AS operacionId,
+        Ubicacion.id                                                              AS Ubicacion,
+        Ambientes.ambientes_id                                                    AS ambienteId,
+        Tiempo.id                                                                 AS tiempoId,
+        tipoInmueble.id                                                           AS tipoInmueble,
+        Rango.rango_m2_id                                                         AS rangoM2,
+        tipoMoneda.id                                                             AS tipoMoneda,
+        --Calculables--------------------------------------------------------------------------------------
+        --podemos hacer el AVG y luego mostrarlo o guardar ambos datos y luego en la view realizar el AVG
+        --aplica para los dias y para el total publicado
+        AVG(DATEDIFF(DAY, Anuncio.fecha_publicacion, Anuncio.fecha_finalizacion)) AS promedioDiasAnuncio,
+        SUM(Anuncio.precio_publicado)                                             AS totalPrecioPublicado
+
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE Inmueble
-                  ON Anuncio.inmueble_id = Inmueble.codigo
-             --tipo Inmueble
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE tipoInmueble
-                  ON tipoInmueble.id = Inmueble.tipo_inmueble
-             --Ambientes
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_AMBIENTES Ambientes
-                  ON Inmueble.ambientes = Ambientes.ambientes_descripcion
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOperacion
-                  ON Anuncio.tipo_operacion = tipoOperacion.tipo_operacion_descripcion
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_MONEDA tipoMoneda
-                  ON Anuncio.tipo_moneda = tipoMoneda.id
-             --Ubicacion
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio
-                  ON Barrio.id = Inmueble.barrio_id
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD Localidad
-                  ON Barrio.localidad_id = Localidad.id
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
-                  ON Localidad.provincia_id = Provincia.id
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_UBICACION Ubicacion
-                  ON Ubicacion.barrio = Barrio.descripcion
-                      AND Ubicacion.localidad = Localidad.descripcion
-                      AND Ubicacion.provincia = Provincia.descripcion
-             --Tiempo
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
-                  ON Tiempo.anio = YEAR(Anuncio.fecha_publicacion)
-                      AND Tiempo.cuatrimestre =
-                          BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(Anuncio.fecha_publicacion)
-                      AND Tiempo.mes = MONTH(Anuncio.fecha_publicacion)
-             --Rango m2
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2 Rango
-                  ON Rango.rango_m2_id =
-                     BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_M2(Inmueble.superficie_total)
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE Inmueble
+        ON Anuncio.inmueble_id = Inmueble.codigo
+    --tipo Inmueble
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_INMUEBLE tipoInmueble
+        ON tipoInmueble.id = Inmueble.tipo_inmueble
+    --Ambientes
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_AMBIENTES Ambientes
+        ON Inmueble.ambientes = Ambientes.ambientes_descripcion
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOperacion
+        ON Anuncio.tipo_operacion = tipoOperacion.tipo_operacion_descripcion
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_MONEDA tipoMoneda
+        ON Anuncio.tipo_moneda = tipoMoneda.id
+    --Ubicacion
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO Barrio
+        ON Barrio.id = Inmueble.barrio_id
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD Localidad
+        ON Barrio.localidad_id = Localidad.id
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROVINCIA Provincia
+        ON Localidad.provincia_id = Provincia.id
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_UBICACION Ubicacion
+        ON Ubicacion.barrio = Barrio.descripcion
+            AND Ubicacion.localidad = Localidad.descripcion
+            AND Ubicacion.provincia = Provincia.descripcion
+    --Tiempo
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
+        ON Tiempo.anio = YEAR(Anuncio.fecha_publicacion)
+            AND Tiempo.cuatrimestre =
+                BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(Anuncio.fecha_publicacion)
+            AND Tiempo.mes = MONTH(Anuncio.fecha_publicacion)
+    --Rango m2
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2 Rango
+        ON Rango.rango_m2_id =
+            BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_M2(Inmueble.superficie_total)
+    GROUP BY tipoOperacion.tipo_operacion_id, Ubicacion.id,Ambientes.ambientes_id, Tiempo.id, tipoInmueble.id, Rango.rango_m2_id, tipoMoneda.id                  
 END
 GO                                              
 
@@ -1016,11 +1020,11 @@ EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_SUCURSAL
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
+-- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
+-- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
+-- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 
 COMMIT
 GO
