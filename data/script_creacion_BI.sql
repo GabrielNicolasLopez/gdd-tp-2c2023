@@ -409,19 +409,20 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
 (
-    --PK's---------------------------------
-    tipo_operacion_id     NUMERIC(18, 0),
-    ubicacion_id          NUMERIC(18, 0),
-    ambientes_id          NUMERIC(18, 0),
-    tiempo_id             NUMERIC(18, 0),
-    tipo_inmueble_id      NVARCHAR(100),
-    rango_m2_id           NUMERIC(18, 0),
-    tipo_moneda_id        NVARCHAR(100),
-    --Calculables--------------------------
-    dias_publicacion      NUMERIC(18, 0),
-    precio_publicado      NUMERIC(18, 0),
+    --PK's-------------------------------------
+    tipo_operacion_id       NUMERIC(18, 0),
+    ubicacion_id            NUMERIC(18, 0),
+    ambientes_id            NUMERIC(18, 0),
+    tiempo_id               NUMERIC(18, 0),
+    tipo_inmueble_id        NVARCHAR(100),
+    rango_m2_id             NUMERIC(18, 0),
+    tipo_moneda_id          NVARCHAR(100),
+    --Calculables-------------------------------
+    sum_dias_publicados     NUMERIC(18, 0), 
+    sum_precios_publicados  NUMERIC(18, 0),
+    cant_anuncios           NUMERIC(18, 0),
     PRIMARY KEY (tipo_operacion_id, ubicacion_id, ambientes_id,
-                tiempo_id, tipo_inmueble_id, rango_m2_id, tipo_moneda_id)
+                 tiempo_id, tipo_inmueble_id, rango_m2_id, tipo_moneda_id)
 )
 GO
 
@@ -441,6 +442,7 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
 (
+    --PK's---------------------------------
     tiempo_id         NUMERIC(18, 0),
     ubicacion_id      NUMERIC(18, 0),
     fecha_pago        DATETIME,
@@ -449,6 +451,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
     montoActual       NUMERIC(18, 2),
     montoAnterior     NUMERIC(18, 2),
     estado_alquiler   NVARCHAR(100),
+    --Calculables--------------------------
 
     PRIMARY KEY (tiempo_id, ubicacion_id, fecha_pago, fecha_vencimiento, 
     rango_etario_id, montoActual, montoAnterior, estado_alquiler)
@@ -457,16 +460,22 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION
 (
-    anuncio_id        NUMERIC(18, 0),
-    tiempo_id         NUMERIC(18, 0),
-    sucursal_id       NUMERIC(18, 0),
-    tipo_operacion_id NUMERIC(18, 0),
-    comision          NUMERIC(18, 2),
-    rango_etario_id   NUMERIC(18, 0),
-    tipo_moneda_id    NVARCHAR(100),
-    precio_publicado  NUMERIC(18, 0)
-        PRIMARY KEY (anuncio_id, tiempo_id, sucursal_id, tipo_operacion_id, comision, rango_etario_id,
-                     tipo_moneda_id, precio_publicado)
+    --PK's---------------------------------
+    tiempo_id               NUMERIC(18, 0),
+    sucursal_id             NUMERIC(18, 0),
+    tipo_operacion_id       NUMERIC(18, 0),
+    rango_etario_id         NUMERIC(18, 0),
+    tipo_moneda_id          NVARCHAR(100),
+    --Calculables--------------------------
+    estadoAnuncio           NVARCHAR(100),
+    montoTotalComisiones    NUMERIC(18, 0), --con este 
+    cantidadComisiones      NUMERIC(18, 0), --y este calculamos el valor promedio de comisiones
+    opsConcretadas          NUMERIC(18, 0), --con este 
+    opsTotales              NUMERIC(18, 0), --y este calculamos el % de ops concretadas
+    montoContratosCerrados  NUMERIC(18, 0), --sumamos el monto de contratos cerrados
+    
+    PRIMARY KEY (tiempo_id, sucursal_id, tipo_operacion_id, 
+    rango_etario_id, tipo_moneda_id)
 )
 GO
 
@@ -797,6 +806,8 @@ BEGIN
 END
 GO
 
+-- SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
+
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 AS
 BEGIN
@@ -807,22 +818,22 @@ BEGIN
                                                                                     tipo_inmueble_id,
                                                                                     rango_m2_id,
                                                                                     tipo_moneda_id,
-                                                                                    dias_publicacion,
-                                                                                    precio_publicado)
+                                                                                    sum_dias_publicados,
+                                                                                    sum_precios_publicados,
+                                                                                    cant_anuncios)
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        tipoOperacion.tipo_operacion_id                                           AS operacionId,
-        Ubicacion.id                                                              AS Ubicacion,
-        Ambientes.ambientes_id                                                    AS ambienteId,
-        Tiempo.id                                                                 AS tiempoId,
-        tipoInmueble.id                                                           AS tipoInmueble,
-        Rango.rango_m2_id                                                         AS rangoM2,
-        tipoMoneda.id                                                             AS tipoMoneda,
+        tipoOperacion.tipo_operacion_id                                           AS tipo_operacion_id,
+        Ubicacion.id                                                              AS ubicacion_id,
+        Ambientes.ambientes_id                                                    AS ambientes_id,
+        Tiempo.id                                                                 AS tiempo_id,
+        tipoInmueble.id                                                           AS tipo_inmueble_id,
+        Rango.rango_m2_id                                                         AS rango_m2_id,
+        tipoMoneda.id                                                             AS tipo_moneda_id,
         --Calculables--------------------------------------------------------------------------------------
-        --podemos hacer el AVG y luego mostrarlo o guardar ambos datos y luego en la view realizar el AVG
-        --aplica para los dias y para el total publicado
-        AVG(DATEDIFF(DAY, Anuncio.fecha_publicacion, Anuncio.fecha_finalizacion)) AS promedioDiasAnuncio,
-        SUM(Anuncio.precio_publicado)                                             AS totalPrecioPublicado
+        SUM(DATEDIFF(DAY, Anuncio.fecha_publicacion, Anuncio.fecha_finalizacion)) AS sum_dias_publicados,
+        SUM(Anuncio.precio_publicado)                                             AS sum_precios_publicados,
+        COUNT(*)                                                                  AS cant_anuncios
 
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
     JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE Inmueble
@@ -968,41 +979,52 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 AS
 BEGIN
-    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION (anuncio_id, tiempo_id,
-                                                                                      sucursal_id, tipo_operacion_id,
-                                                                                      comision, rango_etario_id,
-                                                                                      tipo_moneda_id, precio_publicado)
-    SELECT Anuncio.codigo,
-           Tiempo.id,
-           Agente.sucursal_id,
-           tipoOperacion.tipo_operacion_id,
-           (SELECT SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))
-            FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio2
-                     LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
-                               ON Anuncio2.codigo = Venta.anuncio_id
-                     LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
-                               ON Anuncio2.codigo = Alquiler.anuncio_id
-            WHERE Anuncio2.codigo = Anuncio.codigo) AS Comision,
-           rangoEtario.rango_etario_id,
-           Moneda.id,
-           Anuncio.precio_publicado
+    --ACLARACION: SI COMISION = 0 ENTONCES ESTADO_ANUNCIO = FINALIZADO (AKA NO SE VENDIO NI SE ALQUILO)
+    INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION   (tiempo_id,
+                                                                                        sucursal_id,
+                                                                                        tipo_operacion_id,
+                                                                                        rango_etario_id,
+                                                                                        tipo_moneda_id,
+                                                                                        montoTotalComisiones)
+    SELECT
+        --PK's---------------------------------------------------------------------------------------------
+        Tiempo.id                                                                   AS Tiempo,
+        Agente.sucursal_id                                                          AS Sucursal,
+        tipoOperacion.tipo_operacion_id                                             AS tipoOperacion,
+        rangoEtario.rango_etario_id                                                 AS rangoEtario,
+        Moneda.id                                                                   AS tipoMoneda,
+        --Calculables--------------------------------------------------------------------------------------
+        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))               AS montoTotalComisiones
+        -- COUNT(CASE WHEN (SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0) THEN 1  END)                                                             AS cantidadComisiones
+        -- COUNT(
+        -- CASE WHEN SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) 
+        -- = 0 THEN 1 END)                                                             AS cantidadComisiones   
+
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
-                  ON Tiempo.anio = YEAR(Anuncio.fecha_publicacion)
-                      AND Tiempo.cuatrimestre =
-                          BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(Anuncio.fecha_publicacion)
-                      AND Tiempo.mes = MONTH(Anuncio.fecha_publicacion)
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AGENTE Agente
-                  ON Anuncio.agente_id = Agente.id
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOperacion
-                  ON Anuncio.tipo_operacion = tipoOperacion.tipo_operacion_descripcion
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
-                  ON Agente.persona_id = Persona.id
-             JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario
-                  ON rangoEtario.rango_etario_id =
-                     BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_ETARIO(DATEDIFF(YEAR, Persona.fecha_nac, GETDATE()))
-             JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_MONEDA Moneda
-                  ON Anuncio.tipo_moneda = Moneda.id
+    --Comision de venta
+    LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
+        ON Anuncio.codigo = Venta.anuncio_id
+    --Comision de alquiler
+    LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
+        ON Anuncio.codigo = Alquiler.anuncio_id
+    --
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
+        ON Tiempo.anio = YEAR(Anuncio.fecha_publicacion)
+            AND Tiempo.cuatrimestre =
+                BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(Anuncio.fecha_publicacion)
+            AND Tiempo.mes = MONTH(Anuncio.fecha_publicacion)
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.AGENTE Agente
+        ON Anuncio.agente_id = Agente.id
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOperacion
+        ON Anuncio.tipo_operacion = tipoOperacion.tipo_operacion_descripcion
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PERSONA Persona
+        ON Agente.persona_id = Persona.id
+    JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario
+        ON rangoEtario.rango_etario_id =
+            BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_ETARIO(DATEDIFF(YEAR, Persona.fecha_nac, GETDATE()))
+    JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TIPO_MONEDA Moneda
+        ON Anuncio.tipo_moneda = Moneda.id
+    GROUP BY Tiempo.id, Agente.sucursal_id, tipoOperacion.tipo_operacion_id, rangoEtario.rango_etario_id, Moneda.id
 END
 GO
 
@@ -1044,6 +1066,8 @@ EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 COMMIT
 GO
 
+
+/*
 /********************
     EJERCICIO 01
 *********************/
@@ -1236,7 +1260,7 @@ FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION hechos
 GROUP BY tipoOperacion.tipo_operacion_descripcion, Tiempo.cuatrimestre, hechosOperacion.sucursal_id,
          hechosOperacion.tipo_moneda_id
 GO
-
+*/
 -- Invocación de las vistas
 /*
 SELECT *
