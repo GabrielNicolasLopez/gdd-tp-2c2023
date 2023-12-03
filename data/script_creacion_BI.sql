@@ -406,8 +406,8 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA
     ubicacion_id     NUMERIC(18, 0),
     tipo_inmueble_id NVARCHAR(100),
     --Calculables--------------------------
-    sum_m2           NUMERIC(18, 0),
-    sum_precio_venta NUMERIC(18, 0),
+    sum_m2           NUMERIC(18, 2),
+    sum_precio_venta NUMERIC(18, 2),
     PRIMARY KEY (tiempo_id, ubicacion_id, tipo_inmueble_id)
 )
 GO
@@ -448,21 +448,6 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACIO
 )
 GO
 
-/*
-CREATE FUNCTION BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(@FECHA DATETIME)
-    RETURNS NUMERIC(18, 0)
-AS
-BEGIN
-    RETURN
-        CASE
-            WHEN MONTH(@Fecha) BETWEEN 1 AND 4 THEN 1
-            WHEN MONTH(@Fecha) BETWEEN 5 AND 8 THEN 2
-            WHEN MONTH(@Fecha) BETWEEN 9 AND 12 THEN 3
-            END
-END
-GO
-*/
-
 CREATE FUNCTION BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(@FECHA DATETIME)
     RETURNS NUMERIC(18, 0)
 AS
@@ -477,13 +462,13 @@ BEGIN
     DECLARE @ID_RANGO NUMERIC(18, 0)
     IF @SUPERFICIE < 35
         SET @ID_RANGO = 1
-    IF @SUPERFICIE BETWEEN 35 AND 55
+    IF @SUPERFICIE BETWEEN 35 AND 54
         SET @ID_RANGO = 2
-    IF @SUPERFICIE BETWEEN 55 AND 75
+    IF @SUPERFICIE BETWEEN 55 AND 74
         SET @ID_RANGO = 3
-    IF @SUPERFICIE BETWEEN 75 AND 100
+    IF @SUPERFICIE BETWEEN 75 AND 99
         SET @ID_RANGO = 4
-    IF @SUPERFICIE > 100
+    IF @SUPERFICIE >= 100
         SET @ID_RANGO = 5
     RETURN @ID_RANGO
 END
@@ -495,11 +480,11 @@ BEGIN
     DECLARE @ID_RANGO NUMERIC(18, 0)
     IF @EDAD < 25
         SET @ID_RANGO = 1
-    IF @EDAD BETWEEN 25 AND 35
+    IF @EDAD BETWEEN 25 AND 34
         SET @ID_RANGO = 2
-    IF @EDAD BETWEEN 35 AND 50
+    IF @EDAD BETWEEN 35 AND 49
         SET @ID_RANGO = 3
-    IF @EDAD > 50
+    IF @EDAD >= 50
         SET @ID_RANGO = 4
     RETURN @ID_RANGO
 END
@@ -896,7 +881,6 @@ FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 AS
 BEGIN
-    DECLARE @FECHA DATETIME = '2024-10-10'
     INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER(tiempo_id,
                                                                                     ubicacion_id,
                                                                                     rango_etario_id,
@@ -912,30 +896,30 @@ BEGIN
     -- DECLARE @FECHA DATETIME = '2024-10-10'
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        Tiempo.id                                                                                                AS tiempo_id,
-        Ubicacion.id                                                                                             AS ubicacion_id,
-        rangoEtario.rango_etario_id                                                                              AS rango_etario_id,
-        EstadoAlquiler.id                                                                                        AS estado_alquiler,
+        Tiempo.id                                                                                                   AS tiempo_id,
+        Ubicacion.id                                                                                                AS ubicacion_id,
+        rangoEtario.rango_etario_id                                                                                 AS rango_etario_id,
+        EstadoAlquiler.id                                                                                           AS estado_alquiler,
         --Calculables--------------------------------------------------------------------------------------
         SUM(IIF(pagoAlquilerActual.fecha_pago > pagoAlquilerActual.fecha_vencimiento, 1,
-                0))                                                                                              AS cant_pagos_atrasados,
-        COUNT(pagoAlquilerActual.fecha_pago)                                                                     AS cant_pagos,
+                0))                                                                                                 AS cant_pagos_atrasados,
+        COUNT(pagoAlquilerActual.fecha_pago)                                                                        AS cant_pagos,
         SUM(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                              MONTH(@FECHA),
-                                                                              YEAR(@FECHA))
+                                                                              MONTH(GETDATE()),
+                                                                              YEAR(GETDATE()))
             -
             BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                              MONTH(DATEADD(MONTH, -1, @FECHA)),
-                                                                              YEAR(DATEADD(MONTH, -1, @FECHA)))) AS sum_incrementos,
+                                                                              MONTH(DATEADD(MONTH, -1, GETDATE())),
+                                                                              YEAR(DATEADD(MONTH, -1, GETDATE())))) AS sum_incrementos,
         COUNT(IIF(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                                    MONTH(@FECHA),
-                                                                                    YEAR(@FECHA))
+                                                                                    MONTH(GETDATE()),
+                                                                                    YEAR(GETDATE()))
                       -
                   BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                                    MONTH(DATEADD(MONTH, -1, @FECHA)),
-                                                                                    YEAR(DATEADD(MONTH, -1, @FECHA))) >
+                                                                                    MONTH(DATEADD(MONTH, -1, GETDATE())),
+                                                                                    YEAR(DATEADD(MONTH, -1, GETDATE()))) >
                   0, 1,
-                  0))                                                                                            AS cant_incrementos
+                  0))                                                                                               AS cant_incrementos
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER pagoAlquilerActual
                   ON Alquiler.codigo = pagoAlquilerActual.alquiler_id
@@ -966,7 +950,7 @@ BEGIN
                   ON EstadoAlquiler.id = Alquiler.estado_alquiler
              JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario
                   ON rangoEtario.rango_etario_id =
-                     BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_ETARIO(DATEDIFF(YEAR, Persona.fecha_nac, @FECHA))
+                     BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_CALCULAR_RANGO_ETARIO(DATEDIFF(YEAR, Persona.fecha_nac, GETDATE()))
     WHERE Alquiler.estado_alquiler = 'Activo'
     GROUP BY Tiempo.id, Ubicacion.id, rangoEtario.rango_etario_id, EstadoAlquiler.id
 END
@@ -1214,25 +1198,41 @@ WHERE HechosAlquiler.estado_alquiler = 'Activo'
 GROUP BY Tiempo.mes, Tiempo.anio
 GO
 
-/*
 /********************
     EJERCICIO 06
 *********************/
 CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_M2
 AS
-SELECT hechosVenta.tipo_inmueble_id,
-       Ubicacion.localidad,
-       Tiempo.cuatrimestre,
-       Tiempo.anio,
-       SUM(hechosVenta.precio) / SUM(hechosVenta.m2) AS Promedio
-FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA hechosVenta
+SELECT HechosVenta.tipo_inmueble_id                                                    AS tipoInmueble,
+       Ubicacion.localidad                                                             AS localidad,
+       Tiempo.cuatrimestre                                                             AS cuatrimestre,
+       Tiempo.anio                                                                     AS anio,
+       CONVERT(DECIMAL(18, 2), SUM(HechosVenta.sum_precio_venta / HechosVenta.sum_m2)) AS Promedio
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA HechosVenta
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
-              ON hechosVenta.tiempo_id = Tiempo.id
+              ON HechosVenta.tiempo_id = Tiempo.id
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_UBICACION Ubicacion
-              ON hechosVenta.ubicacion_id = Ubicacion.id
-GROUP BY hechosVenta.tipo_inmueble_id, Ubicacion.localidad, Tiempo.cuatrimestre, Tiempo.anio
+              ON HechosVenta.ubicacion_id = Ubicacion.id
+GROUP BY HechosVenta.tipo_inmueble_id, Ubicacion.localidad, Tiempo.cuatrimestre, Tiempo.anio
 GO
 
+/*
+SELECT * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_M2
+SELECT I.superficie_total, A.precio_publicado, V.precio_venta
+FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA V
+         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO A
+              ON V.anuncio_id = A.codigo
+         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE I
+              ON A.inmueble_id = I.codigo
+         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO B
+              ON I.barrio_id = B.id
+         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD L
+              ON B.localidad_id = L.id
+WHERE L.descripcion = 'La Corvina'
+  AND I.tipo_inmueble = 'Oficina'
+*/
+
+/*
 /********************
     EJERCICIO 07
 *********************/
