@@ -873,13 +873,21 @@ GO
 
 /*
 SELECT *
-FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
+FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
+*/
+
+/*
+DECLARE @FECHA DATETIME = '2024-10-01'
+SELECT MONTH(@FECHA)
+
+SELECT *
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
 */
 
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 AS
 BEGIN
-    DECLARE @FECHA DATETIME = GETDATE()
+    DECLARE @FECHA DATETIME = '2024-10-10'
     INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER(tiempo_id,
                                                                                     ubicacion_id,
                                                                                     rango_etario_id,
@@ -892,6 +900,9 @@ BEGIN
     -- de la consulta no había contrato => dicho contrato tenía un precio nulo, al tratar dicho nulo como cero, entonces el precio anterior es 0,
     -- por ende, el incremento se calcula como: el valor del primer mes de alquiler - 0, esto no representa un incremento real.
     -- En otras palabras, antes no había gasto, pero de repente si lo hay.
+    DECLARE @FECHA DATETIME = '2024-10-10'
+    SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
+    WHERE anio = YEAR(@FECHA) AND mes = MONTH(@FECHA)
     SELECT
         --PK's---------------------------------------------------------------------------------------------
         Tiempo.id                                                                                                AS tiempo_id,
@@ -953,6 +964,38 @@ BEGIN
     GROUP BY Tiempo.id, Ubicacion.id, rangoEtario.rango_etario_id, EstadoAlquiler.id
 END
 GO
+
+/*
+SELECT PA.importe, PA.*
+FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER A
+              ON PA.alquiler_id = A.codigo
+WHERE A.estado_alquiler = 'Activo'
+    AND PA.codigo = 888888
+   OR PA.codigo = 8888888
+*/
+
+    /*
+
+    SELECT PA.importe, PA.*
+FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
+         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER A
+              ON PA.alquiler_id = A.codigo
+WHERE A.estado_alquiler = 'Activo'
+    AND PA.alquiler_id = 151518
+    AND PA.codigo = 888888
+   OR PA.codigo = 8888888*/
+
+/*
+INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER(codigo, alquiler_id, fecha_pago,
+                                                                        nro_periodo_pago, descripcion,
+                                                                        fecha_inicio_pago, fecha_fin_pago, importe,
+                                                                        medio_pago, fecha_vencimiento)
+VALUES (888888, 151518, '2024-09-09', 1, 'Pago de alquiler', '2024-03-01', '2024-04-01', 1000, 'Efectivo',
+        '2024-10-01'),
+       (8888888, 151518, '2024-10-10', 1, 'Pago de alquiler', '2024-03-01', '2024-04-01', 2000, 'Efectivo', '2024-11-01')
+GO
+*/
 
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 AS
@@ -1150,23 +1193,22 @@ FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER HechosA
 GROUP BY Tiempo.mes, Tiempo.anio
 GO
 
-/*
 /********************
     EJERCICIO 05
 *********************/
 CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PROMEDIO_INCREMENTO_VALOR_ALQUILERES
 AS
-SELECT Tiempo.mes,
-       Tiempo.anio,
-       SUM(((hechosAlquiler.montoActual * 100) / hechosAlquiler.montoAnterior) - 100) / COUNT(*) AS '%incremento'
-FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER hechosAlquiler
+SELECT Tiempo.mes                                                                                     as mes,
+       Tiempo.anio                                                                                    as anio,
+       CONVERT(DECIMAL(18, 2), SUM(HechosAlquiler.sum_incrementos / HechosAlquiler.cant_incrementos)) AS PromedioIncremento
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER HechosAlquiler
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
-              ON Tiempo.id = hechosAlquiler.tiempo_id
-WHERE hechosAlquiler.estado_alquiler = 'Activo'
-  AND hechosAlquiler.montoActual > hechosAlquiler.montoAnterior
+              ON Tiempo.id = HechosAlquiler.tiempo_id
+WHERE HechosAlquiler.estado_alquiler = 'Activo'
 GROUP BY Tiempo.mes, Tiempo.anio
 GO
 
+/*
 /********************
     EJERCICIO 06
 *********************/
