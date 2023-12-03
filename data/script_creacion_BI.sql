@@ -452,13 +452,12 @@ CREATE FUNCTION BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUAT
     RETURNS NUMERIC(18, 0)
 AS
 BEGIN
-    DECLARE @RESULTADO NUMERIC(18, 0) = 1
-    IF MONTH(@FECHA) > 4
-        SET @RESULTADO = 2
-    ELSE
-        IF MONTH(@FECHA) > 8
-            SET @RESULTADO = 3
-    RETURN @RESULTADO
+    RETURN
+        CASE
+            WHEN MONTH(@Fecha) BETWEEN 1 AND 4 THEN 1
+            WHEN MONTH(@Fecha) BETWEEN 5 AND 8 THEN 2
+            WHEN MONTH(@Fecha) BETWEEN 9 AND 12 THEN 3
+            END
 END
 GO
 
@@ -900,9 +899,7 @@ BEGIN
     -- de la consulta no había contrato => dicho contrato tenía un precio nulo, al tratar dicho nulo como cero, entonces el precio anterior es 0,
     -- por ende, el incremento se calcula como: el valor del primer mes de alquiler - 0, esto no representa un incremento real.
     -- En otras palabras, antes no había gasto, pero de repente si lo hay.
-    DECLARE @FECHA DATETIME = '2024-10-10'
-    SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
-    WHERE anio = YEAR(@FECHA) AND mes = MONTH(@FECHA)
+    -- DECLARE @FECHA DATETIME = '2024-10-10'
     SELECT
         --PK's---------------------------------------------------------------------------------------------
         Tiempo.id                                                                                                AS tiempo_id,
@@ -975,16 +972,15 @@ WHERE A.estado_alquiler = 'Activo'
    OR PA.codigo = 8888888
 */
 
-    /*
-
-    SELECT PA.importe, PA.*
+/*
+SELECT PA.importe, PA.*
 FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
-         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER A
-              ON PA.alquiler_id = A.codigo
+     JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER A
+          ON PA.alquiler_id = A.codigo
 WHERE A.estado_alquiler = 'Activo'
-    AND PA.alquiler_id = 151518
-    AND PA.codigo = 888888
-   OR PA.codigo = 8888888*/
+AND PA.alquiler_id = 151518
+AND PA.codigo = 888888
+OR PA.codigo = 8888888*/
 
 /*
 INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER(codigo, alquiler_id, fecha_pago,
