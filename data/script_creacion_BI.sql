@@ -422,7 +422,7 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
     --Calculables--------------------------
     cant_pagos_atrasados NUMERIC(18, 0),
     cant_pagos           NUMERIC(18, 0),
-    sum_incrementos      NUMERIC(18, 0),
+    sum_incrementos      NUMERIC(18, 2),
     cant_incrementos     NUMERIC(18, 0),
     PRIMARY KEY (tiempo_id, ubicacion_id, rango_etario_id, estado_alquiler)
 )
@@ -437,12 +437,10 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACIO
     rango_etario_id        NUMERIC(18, 0),
     tipo_moneda_id         NVARCHAR(100),
     --Calculables--------------------------
-    -- estadoAnuncio          NVARCHAR(100),
-    sum_comisiones         NUMERIC(18, 0), --con este
-    -- cant_comisiones        NUMERIC(18, 0), --y este calculamos el valor promedio de comisiones
-    ops_concretadas        NUMERIC(18, 0), --con este
-    ops_totales            NUMERIC(18, 0), --y este calculamos el % de ops concretadas
-    sum_contratos_cerrados NUMERIC(18, 0), --sumamos el monto de contratos cerrados
+    sum_comisiones         NUMERIC(18, 2),
+    ops_concretadas        NUMERIC(18, 0),
+    ops_totales            NUMERIC(18, 0), 
+    sum_contratos_cerrados NUMERIC(18, 2), 
     PRIMARY KEY (tiempo_id, sucursal_id, tipo_operacion_id,
                  rango_etario_id, tipo_moneda_id)
 )
@@ -1016,10 +1014,10 @@ BEGIN
         rangoEtario.rango_etario_id                                                    AS rangoEtario,
         Moneda.id                                                                      AS tipoMoneda,
         --Calculables--------------------------------------------------------------------------------------
-        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                  AS sum_comisiones,
-        SUM(IIF((ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0, 1, 0)) AS ops_concretadas,
-        COUNT(*)                                                                       AS ops_totales,
-        SUM(Anuncio.precio_publicado)                                                  AS sum_contratos_cerrados
+        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                   AS sum_comisiones,
+        SUM(IIF((ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0, 1, 0))  AS ops_concretadas,
+        COUNT(*)                                                                        AS ops_totales,
+        SUM(IIF((Anuncio.estado_anuncio != 'Finalizado'), Anuncio.precio_publicado, 0)) AS sum_contratos_cerrados
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
              --Comision de venta
              LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
@@ -1075,13 +1073,13 @@ EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_MONEDA
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_SUCURSAL
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
+-- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
+-- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
+-- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 
 COMMIT
 GO
@@ -1257,28 +1255,27 @@ GROUP BY TipoOperacion.tipo_operacion_descripcion, HechosOperacion.sucursal_id,
          RangoEtario.rango_etario_descripcion, Tiempo.anio
 GO
 
-/*
 /********************
     EJERCICIO 09
 *********************/
 CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MONTO_CONTRATOS_CERRADOS
 AS
-SELECT tipoOperacion.tipo_operacion_descripcion,
-       Tiempo.cuatrimestre,
-       hechosOperacion.sucursal_id,
-       hechosOperacion.tipo_moneda_id,
-       SUM(hechosOperacion.precio_publicado) AS montoTotal
-FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION hechosOperacion
+SELECT TipoOperacion.tipo_operacion_descripcion    AS tipoOperacion,
+       Tiempo.cuatrimestre                         AS cuatrimestre,
+       HechosOperacion.sucursal_id                 AS sucursal,
+       HechosOperacion.tipo_moneda_id              AS tipoMoneda,
+       SUM(HechosOperacion.sum_contratos_cerrados) AS montoContratosCerrados
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION HechosOperacion
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
-              ON hechosOperacion.tiempo_id = Tiempo.id
-         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOperacion
-              ON tipoOperacion.tipo_operacion_id = hechosOperacion.tipo_operacion_id
-         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario
-              ON hechosOperacion.rango_etario_id = rangoEtario.rango_etario_id
-GROUP BY tipoOperacion.tipo_operacion_descripcion, Tiempo.cuatrimestre, hechosOperacion.sucursal_id,
-         hechosOperacion.tipo_moneda_id
+              ON HechosOperacion.tiempo_id = Tiempo.id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION TipoOperacion
+              ON TipoOperacion.tipo_operacion_id = HechosOperacion.tipo_operacion_id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO RangoEtario
+              ON HechosOperacion.rango_etario_id = RangoEtario.rango_etario_id
+GROUP BY TipoOperacion.tipo_operacion_descripcion, Tiempo.cuatrimestre, HechosOperacion.sucursal_id,
+         HechosOperacion.tipo_moneda_id
 GO
-*/
+
 -- Invocación de las vistas
 /*
 SELECT *
