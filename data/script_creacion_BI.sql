@@ -896,7 +896,7 @@ BEGIN
         --Calculables--------------------------------------------------------------------------------------
         COUNT(CASE
                   WHEN pagoAlquilerActual.fecha_pago > pagoAlquilerActual.fecha_vencimiento
-                      THEN 1 END)                                                                                AS cant_pagos_atrasados,
+                      THEN 1 ELSE 0 END)                                                                         AS cant_pagos_atrasados,
         COUNT(pagoAlquilerActual.fecha_pago)                                                                     AS cant_pagos,
         SUM(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
                                                                               MONTH(@FECHA),
@@ -915,7 +915,7 @@ BEGIN
                                                                                                 MONTH(DATEADD(MONTH, -1, @FECHA)),
                                                                                                 YEAR(DATEADD(MONTH, -1, @FECHA)))
                           > 0
-                      THEN 1 END)                                                                                AS cant_incrementos
+                      THEN 1 ELSE 0 END)                                                                             AS cant_incrementos
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER pagoAlquilerActual
                   ON Alquiler.codigo = pagoAlquilerActual.alquiler_id
@@ -975,16 +975,16 @@ BEGIN
 
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        Tiempo.id                                                                                         AS Tiempo,
-        Agente.sucursal_id                                                                                AS Sucursal,
-        tipoOperacion.tipo_operacion_id                                                                   AS tipoOperacion,
-        rangoEtario.rango_etario_id                                                                       AS rangoEtario,
-        Moneda.id                                                                                         AS tipoMoneda,
+        Tiempo.id                                                                        AS Tiempo,
+        Agente.sucursal_id                                                               AS Sucursal,
+        tipoOperacion.tipo_operacion_id                                                  AS tipoOperacion,
+        rangoEtario.rango_etario_id                                                      AS rangoEtario,
+        Moneda.id                                                                        AS tipoMoneda,
         --Calculables--------------------------------------------------------------------------------------
-        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                                     AS sum_comisiones,
-        COUNT(CASE WHEN (ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0 THEN 1 ELSE 0 END) AS ops_concretadas,
-        COUNT(*)                                                                                          AS ops_totales,
-        SUM(Anuncio.precio_publicado)                                                                     AS sum_contratos_cerrados
+        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                    AS sum_comisiones,
+        COUNT(IIF((ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0, 1, 0)) AS ops_concretadas,
+        COUNT(*)                                                                         AS ops_totales,
+        SUM(Anuncio.precio_publicado)                                                    AS sum_contratos_cerrados
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
              --Comision de venta
              LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
