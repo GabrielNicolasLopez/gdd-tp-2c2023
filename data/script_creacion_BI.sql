@@ -1,6 +1,7 @@
 USE [GD2C2023]
 GO
 
+-- Inicio Configurar reglas de nombre de objetos
 SET ANSI_NULLS ON
 GO
 
@@ -9,13 +10,12 @@ GO
 
 SET CONCAT_NULL_YIELDS_NULL ON
 GO
-
--- Inicio DROP FKs
+-- Fin Configurar reglas de nombre de objetos
 
 BEGIN TRANSACTION
 GO
 
---DROPS HECHO_ANUNCIO
+-- Inicio DROP FKs
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FK_HECHO_ANUNCIO_TIPO_OPERACION_ID', 'F') IS NOT NULL
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
     DROP CONSTRAINT FK_HECHO_ANUNCIO_TIPO_OPERACION_ID
@@ -51,7 +51,6 @@ ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
     DROP CONSTRAINT FK_HECHO_ANUNCIO_TIPO_MONEDA_ID
 GO
 
---DROPS HECHOS_ALQUILER
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FK_HECHOS_ALQUILER_TIEMPO_ID', 'F') IS NOT NULL
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
     DROP CONSTRAINT FK_HECHOS_ALQUILER_TIEMPO_ID
@@ -67,7 +66,6 @@ ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
     DROP CONSTRAINT FK_BI_HECHOS_ALQUILER_ESTADO_ALQUILER
 GO
 
---DROPS HECHOS_VENTA
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FK_HECHOS_VENTA_TIEMPO_ID', 'F') IS NOT NULL
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA
     DROP CONSTRAINT FK_HECHOS_VENTA_TIEMPO_ID
@@ -83,7 +81,6 @@ ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA
     DROP CONSTRAINT FK_HECHOS_VENTA_TIPO_INMUEBLE_ID
 GO
 
---DROPS HECHO_OPERACION
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FK_HECHOS_OPERACION_TIEMPO_ID', 'F') IS NOT NULL
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION
     DROP CONSTRAINT FK_HECHOS_OPERACION_TIEMPO_ID
@@ -113,8 +110,9 @@ IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FK_BI_HECHOS_ALQU
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
     DROP CONSTRAINT FK_BI_HECHOS_ALQUILER_RANGO_ETARIO_ID
 GO
+-- Fin DROP FKs
 
--- DROP TABLE
+-- Inicio DROP Procedures
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION', 'U') IS NOT NULL
     DROP TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION
 GO
@@ -178,8 +176,9 @@ GO
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO', 'U') IS NOT NULL
     DROP TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
 GO
+-- Fin DROP Procedures
 
-----DROP FUNCTIONS
+-- Inicio DROP Functions
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE') IS NOT NULL
     DROP FUNCTION BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE
 GO
@@ -195,8 +194,9 @@ GO
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO') IS NOT NULL
     DROP FUNCTION BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO
 GO
+-- Fin DROP Functions
 
---DROP PROCEDURE
+-- Inicio DROP Procedures
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIEMPO') IS NOT NULL
     DROP PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIEMPO
 GO
@@ -256,9 +256,9 @@ GO
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_ESTADO_ALQUILER') IS NOT NULL
     DROP PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_ESTADO_ALQUILER
 GO
---FIN DROP PROCEDURES
+-- Fin DROP Procedures
 
---DROP VIEWS
+-- Inicio DROP View
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DURACION_PROMEDIO_ANUNCIOS', 'V') IS NOT NULL
     DROP VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.DURACION_PROMEDIO_ANUNCIOS
 GO
@@ -294,28 +294,30 @@ GO
 IF OBJECT_ID('BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TOP_5_BARRIOS_ALQUILERES', 'V') IS NOT NULL
     DROP VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.TOP_5_BARRIOS_ALQUILERES
 GO
+-- Fin DROP Views
 
---DROP ESQUEMA
+-- Inicio crear schema de la aplicación
 IF EXISTS (SELECT SCHEMA_NAME
            FROM INFORMATION_SCHEMA.SCHEMATA
            WHERE SCHEMA_NAME = 'BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO')
     DROP SCHEMA BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO
 GO
 
---CREO ESQUEMA
 CREATE SCHEMA BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO
 GO
+-- Fin crear schema de la aplicación
 
+-- Inicio crear tablas
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION
 (
-    tipo_operacion_id          NUMERIC(18, 0) IDENTITY (1,1) PRIMARY KEY,
+    tipo_operacion_id          NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     tipo_operacion_descripcion NVARCHAR(100)
 )
 GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_UBICACION
 (
-    id        NUMERIC(18, 0) IDENTITY (1,1) PRIMARY KEY,
+    id        NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     provincia NVARCHAR(100),
     localidad NVARCHAR(100),
     barrio    NVARCHAR(100),
@@ -324,14 +326,14 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_AMBIENTES
 (
-    ambientes_id          NUMERIC(18, 0) IDENTITY (1,1) PRIMARY KEY,
+    ambientes_id          NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     ambientes_descripcion NVARCHAR(100)
 )
 GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
 (
-    id           NUMERIC(18, 0) IDENTITY (1,1) PRIMARY KEY,
+    id           NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     anio         NUMERIC(18, 0),
     cuatrimestre NUMERIC(18, 0),
     mes          NUMERIC(18, 0)
@@ -340,14 +342,14 @@ GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_M2
 (
-    rango_m2_id          NUMERIC(18, 0) IDENTITY (1,1) PRIMARY KEY,
+    rango_m2_id          NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     rango_m2_descripcion NVARCHAR(100)
 )
 GO
 
 CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO
 (
-    rango_etario_id          NUMERIC(18, 0) IDENTITY (1,1) PRIMARY KEY,
+    rango_etario_id          NUMERIC(18, 0) IDENTITY (1, 1) PRIMARY KEY,
     rango_etario_descripcion NVARCHAR(100)
 )
 GO
@@ -439,13 +441,15 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACIO
     --Calculables--------------------------
     sum_comisiones         NUMERIC(18, 2),
     ops_concretadas        NUMERIC(18, 0),
-    ops_totales            NUMERIC(18, 0), 
-    sum_contratos_cerrados NUMERIC(18, 2), 
+    ops_totales            NUMERIC(18, 0),
+    sum_contratos_cerrados NUMERIC(18, 2),
     PRIMARY KEY (tiempo_id, sucursal_id, tipo_operacion_id,
                  rango_etario_id, tipo_moneda_id)
 )
 GO
+-- Fin crear tablas
 
+-- Inicio crear Functions
 CREATE FUNCTION BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_CUATRIMESTRE(@FECHA DATETIME)
     RETURNS NUMERIC(18, 0)
 AS
@@ -499,7 +503,9 @@ BEGIN
                      AND PA.alquiler_id = @codigo_alquiler), 0)
 END
 GO
+-- Fin crear Functions
 
+-- Inicio crear FKs
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO
     ADD CONSTRAINT FK_HECHO_ANUNCIO_TIPO_OPERACION_ID FOREIGN KEY (tipo_operacion_id) REFERENCES BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION (tipo_operacion_id)
 GO
@@ -575,7 +581,9 @@ GO
 ALTER TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION
     ADD CONSTRAINT FK_BI_HECHOS_OPERACION_TIPO_MONEDA_ID FOREIGN KEY (tipo_moneda_id) REFERENCES BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_MONEDA (id)
 GO
+-- Fin crear FKs
 
+-- Inicio crear Procedures
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIEMPO
 AS
 BEGIN
@@ -863,19 +871,6 @@ BEGIN
 END
 GO
 
-/*
-SELECT *
-FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
-*/
-
-/*
-DECLARE @FECHA DATETIME = '2024-10-01'
-SELECT MONTH(@FECHA)
-
-SELECT *
-FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO
-*/
-
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 AS
 BEGIN
@@ -894,30 +889,36 @@ BEGIN
     -- DECLARE @FECHA DATETIME = '2024-10-10'
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        Tiempo.id                                                                                                   AS tiempo_id,
-        Ubicacion.id                                                                                                AS ubicacion_id,
-        rangoEtario.rango_etario_id                                                                                 AS rango_etario_id,
-        EstadoAlquiler.id                                                                                           AS estado_alquiler,
+        Tiempo.id                                                                            AS tiempo_id,
+        Ubicacion.id                                                                         AS ubicacion_id,
+        rangoEtario.rango_etario_id                                                          AS rango_etario_id,
+        EstadoAlquiler.id                                                                    AS estado_alquiler,
         --Calculables--------------------------------------------------------------------------------------
-        SUM(IIF(pagoAlquilerActual.fecha_pago > pagoAlquilerActual.fecha_vencimiento, 1,
-                0))                                                                                                 AS cant_pagos_atrasados,
-        COUNT(pagoAlquilerActual.fecha_pago)                                                                        AS cant_pagos,
-        SUM(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                              MONTH(GETDATE()),
-                                                                              YEAR(GETDATE()))
+        SUM(IIF(pagoAlquilerActual.fecha_pago > pagoAlquilerActual.fecha_vencimiento, 1, 0)) AS cant_pagos_atrasados,
+        COUNT(pagoAlquilerActual.fecha_pago)                                                 AS cant_pagos,
+        SUM(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(
+                    Alquiler.codigo,
+                    MONTH(GETDATE()),
+                    YEAR(GETDATE())
+            )
             -
-            BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                              MONTH(DATEADD(MONTH, -1, GETDATE())),
-                                                                              YEAR(DATEADD(MONTH, -1, GETDATE())))) AS sum_incrementos,
-        COUNT(IIF(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                                    MONTH(GETDATE()),
-                                                                                    YEAR(GETDATE()))
+            BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(
+                    Alquiler.codigo,
+                    MONTH(DATEADD(MONTH, -1, GETDATE())),
+                    YEAR(DATEADD(MONTH, -1, GETDATE()))
+            )
+        )                                                                                    AS sum_incrementos,
+        COUNT(IIF(BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(
+                          Alquiler.codigo,
+                          MONTH(GETDATE()),
+                          YEAR(GETDATE())
+                  )
                       -
-                  BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(Alquiler.codigo,
-                                                                                    MONTH(DATEADD(MONTH, -1, GETDATE())),
-                                                                                    YEAR(DATEADD(MONTH, -1, GETDATE()))) >
-                  0, 1,
-                  0))                                                                                               AS cant_incrementos
+                  BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.FX_OBTENER_MONTO(
+                          Alquiler.codigo,
+                          MONTH(DATEADD(MONTH, -1, GETDATE())),
+                          YEAR(DATEADD(MONTH, -1, GETDATE()))) > 0, 1, 0)
+        )                                                                                    AS cant_incrementos
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER Alquiler
              JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER pagoAlquilerActual
                   ON Alquiler.codigo = pagoAlquilerActual.alquiler_id
@@ -954,37 +955,6 @@ BEGIN
 END
 GO
 
-/*
-SELECT PA.importe, PA.*
-FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
-         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER A
-              ON PA.alquiler_id = A.codigo
-WHERE A.estado_alquiler = 'Activo'
-    AND PA.codigo = 888888
-   OR PA.codigo = 8888888
-*/
-
-/*
-SELECT PA.importe, PA.*
-FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER PA
-     JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ALQUILER A
-          ON PA.alquiler_id = A.codigo
-WHERE A.estado_alquiler = 'Activo'
-AND PA.alquiler_id = 151518
-AND PA.codigo = 888888
-OR PA.codigo = 8888888*/
-
-/*
-INSERT INTO LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PAGO_ALQUILER(codigo, alquiler_id, fecha_pago,
-                                                                        nro_periodo_pago, descripcion,
-                                                                        fecha_inicio_pago, fecha_fin_pago, importe,
-                                                                        medio_pago, fecha_vencimiento)
-VALUES (888888, 151518, '2024-09-09', 1, 'Pago de alquiler', '2024-03-01', '2024-04-01', 1000, 'Efectivo',
-        '2024-10-01'),
-       (8888888, 151518, '2024-10-10', 1, 'Pago de alquiler', '2024-03-01', '2024-04-01', 2000, 'Efectivo', '2024-11-01')
-GO
-*/
-
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 AS
 BEGIN
@@ -1008,11 +978,11 @@ BEGIN
 
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        Tiempo.id                                                                      AS Tiempo,
-        Agente.sucursal_id                                                             AS Sucursal,
-        tipoOperacion.tipo_operacion_id                                                AS tipoOperacion,
-        rangoEtario.rango_etario_id                                                    AS rangoEtario,
-        Moneda.id                                                                      AS tipoMoneda,
+        Tiempo.id                                                                       AS Tiempo,
+        Agente.sucursal_id                                                              AS Sucursal,
+        tipoOperacion.tipo_operacion_id                                                 AS tipoOperacion,
+        rangoEtario.rango_etario_id                                                     AS rangoEtario,
+        Moneda.id                                                                       AS tipoMoneda,
         --Calculables--------------------------------------------------------------------------------------
         SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                   AS sum_comisiones,
         SUM(IIF((ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0, 1, 0))  AS ops_concretadas,
@@ -1045,6 +1015,7 @@ BEGIN
     GROUP BY Tiempo.id, Agente.sucursal_id, tipoOperacion.tipo_operacion_id, rangoEtario.rango_etario_id, Moneda.id
 END
 GO
+-- Inicio crear Procedures
 
 COMMIT
 GO
@@ -1052,7 +1023,7 @@ GO
 BEGIN TRANSACTION
 GO
 
--- Ejecucion de procedure
+-- Ejecucion de Procedures
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_ESTADO_ALQUILER
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIEMPO
@@ -1073,17 +1044,22 @@ EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_TIPO_MONEDA
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_SUCURSAL
 
--- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
+EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 
--- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
+EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 
--- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
+EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
+-- Fin ejecucion de Procedures
 
 COMMIT
 GO
 
+BEGIN TRANSACTION
+GO
+
+-- Creacion de Views
 /********************
     EJERCICIO 01
 *********************/
@@ -1162,10 +1138,6 @@ FROM (SELECT RangoEtario.rango_etario_descripcion,
 WHERE Posicion <= 5
 GO
 
-/*
-SELECT * FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER
-*/
-
 /********************
     EJERCICIO 04
 *********************/
@@ -1219,12 +1191,11 @@ GO
 *********************/
 CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VALOR_PROMEDIO_COMISION
 AS
-SELECT Tiempo.anio,
-       Tiempo.cuatrimestre,
-       TipoOperacion.tipo_operacion_descripcion,
-       HechosOperacion.sucursal_id,
-       CONVERT(DECIMAL(6, 2), SUM(HechosOperacion.sum_comisiones) /
-                              SUM(HechosOperacion.ops_concretadas)) AS promedioComision
+SELECT Tiempo.anio                                                                                        AS anio,
+       Tiempo.cuatrimestre                                                                                AS cuatrimestre,
+       TipoOperacion.tipo_operacion_descripcion                                                           AS tipoOperacion,
+       HechosOperacion.sucursal_id                                                                        AS sucursal,
+       CONVERT(DECIMAL(6, 2), SUM(HechosOperacion.sum_comisiones) / SUM(HechosOperacion.ops_concretadas)) AS promedioComision
 FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION HechosOperacion
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
               ON HechosOperacion.tiempo_id = Tiempo.id
@@ -1238,12 +1209,11 @@ GO
 *********************/
 CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.OPERACIONES_CONCRETADAS
 AS
-SELECT TipoOperacion.tipo_operacion_descripcion AS tipoOperacion,
-       HechosOperacion.sucursal_id              AS sucursal,
-       RangoEtario.rango_etario_descripcion     AS rangoEtario,
-       Tiempo.anio                              AS anio,
-       CONVERT(DECIMAL(6, 2), SUM(HechosOperacion.ops_concretadas) / SUM(HechosOperacion.ops_totales) *
-                              100)              AS [%OperacionesConcretadas]
+SELECT TipoOperacion.tipo_operacion_descripcion                                                              AS tipoOperacion,
+       HechosOperacion.sucursal_id                                                                           AS sucursal,
+       RangoEtario.rango_etario_descripcion                                                                  AS rangoEtario,
+       Tiempo.anio                                                                                           AS anio,
+       CONVERT(DECIMAL(6, 2), SUM(HechosOperacion.ops_concretadas) / SUM(HechosOperacion.ops_totales) * 100) AS [%OperacionesConcretadas]
 FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION HechosOperacion
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
               ON HechosOperacion.tiempo_id = Tiempo.id
@@ -1274,6 +1244,10 @@ FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION Hechos
               ON HechosOperacion.rango_etario_id = RangoEtario.rango_etario_id
 GROUP BY TipoOperacion.tipo_operacion_descripcion, Tiempo.cuatrimestre, HechosOperacion.sucursal_id,
          HechosOperacion.tipo_moneda_id
+GO
+-- Fin crear Views
+
+COMMIT
 GO
 
 -- Invocación de las vistas
