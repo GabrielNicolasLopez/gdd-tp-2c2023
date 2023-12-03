@@ -1,6 +1,15 @@
 USE [GD2C2023]
 GO
 
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET CONCAT_NULL_YIELDS_NULL ON
+GO
+
 -- Inicio DROP FKs
 
 BEGIN TRANSACTION
@@ -966,16 +975,16 @@ BEGIN
 
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        Agente.sucursal_id                                                                              AS Sucursal,
-        Tiempo.id                                                                                       AS Tiempo,
-        tipoOperacion.tipo_operacion_id                                                                 AS tipoOperacion,
-        rangoEtario.rango_etario_id                                                                     AS rangoEtario,
-        Moneda.id                                                                                       AS tipoMoneda,
+        Tiempo.id                                                                                         AS Tiempo,
+        Agente.sucursal_id                                                                                AS Sucursal,
+        tipoOperacion.tipo_operacion_id                                                                   AS tipoOperacion,
+        rangoEtario.rango_etario_id                                                                       AS rangoEtario,
+        Moneda.id                                                                                         AS tipoMoneda,
         --Calculables--------------------------------------------------------------------------------------
-        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                                   AS sum_comisiones,
-        COUNT(CASE WHEN (ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0) > 0) THEN 1 END)      AS ops_concretadas,
-        COUNT(*)                                                                                        AS ops_totales,
-        SUM(Anuncio.precio_publicado)                                                                   AS sum_contratos_cerrados
+        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                                     AS sum_comisiones,
+        COUNT(CASE WHEN (ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0 THEN 1 ELSE 0 END) AS ops_concretadas,
+        COUNT(*)                                                                                          AS ops_totales,
+        SUM(Anuncio.precio_publicado)                                                                     AS sum_contratos_cerrados
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
              --Comision de venta
              LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
@@ -1035,9 +1044,9 @@ EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHO_ANUNCIO
 
 EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 
-EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
+EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
 
--- EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_VENTA
+EXEC BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_ALQUILER
 
 COMMIT
 GO
