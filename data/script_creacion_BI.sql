@@ -428,12 +428,12 @@ CREATE TABLE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACIO
     rango_etario_id        NUMERIC(18, 0),
     tipo_moneda_id         NVARCHAR(100),
     --Calculables--------------------------
-    estadoAnuncio          NVARCHAR(100),
-    montoTotalComisiones   NUMERIC(18, 0), --con este
-    cantidadComisiones     NUMERIC(18, 0), --y este calculamos el valor promedio de comisiones
-    opsConcretadas         NUMERIC(18, 0), --con este
-    opsTotales             NUMERIC(18, 0), --y este calculamos el % de ops concretadas
-    montoContratosCerrados NUMERIC(18, 0), --sumamos el monto de contratos cerrados
+    -- estadoAnuncio          NVARCHAR(100),
+    sum_comisiones         NUMERIC(18, 0), --con este
+    -- cant_comisiones        NUMERIC(18, 0), --y este calculamos el valor promedio de comisiones
+    ops_concretadas        NUMERIC(18, 0), --con este
+    ops_totales            NUMERIC(18, 0), --y este calculamos el % de ops concretadas
+    sum_contratos_cerrados NUMERIC(18, 0), --sumamos el monto de contratos cerrados
     PRIMARY KEY (tiempo_id, sucursal_id, tipo_operacion_id,
                  rango_etario_id, tipo_moneda_id)
 )
@@ -952,21 +952,30 @@ BEGIN
                                                                                       tipo_operacion_id,
                                                                                       rango_etario_id,
                                                                                       tipo_moneda_id,
-                                                                                      montoTotalComisiones)
+                                                                                      sum_comisiones,
+                                                                                      ops_concretadas,
+                                                                                      ops_totales,
+                                                                                      sum_contratos_cerrados)
+        -- si una operacion no se concreta -> no tiene comision
+        -- si la operacion se concreta -> tiene comision
+        -- cantidad de comisiones -> cantidad de operaciones concretadas
+        -- cant_comisiones y ops_concretadas se juntan en ops_concretadas ya que toda operacion concretada posee una comision
+        -- esto sucede debido a que un anuncio puede resultar en una venta o en un alquiler, siendo una de las dos comisiones (la de la venta
+        -- o la del alquiler) siempre nulas
+        -- suponemos que el monto de cierre de contratos implica sumar todos los precios publicados de anuncios del GROUP BY
+
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        Tiempo.id                                                     AS Tiempo,
-        Agente.sucursal_id                                            AS Sucursal,
-        tipoOperacion.tipo_operacion_id                               AS tipoOperacion,
-        rangoEtario.rango_etario_id                                   AS rangoEtario,
-        Moneda.id                                                     AS tipoMoneda,
+        Agente.sucursal_id                                                                              AS Sucursal,
+        Tiempo.id                                                                                       AS Tiempo,
+        tipoOperacion.tipo_operacion_id                                                                 AS tipoOperacion,
+        rangoEtario.rango_etario_id                                                                     AS rangoEtario,
+        Moneda.id                                                                                       AS tipoMoneda,
         --Calculables--------------------------------------------------------------------------------------
-        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) AS montoTotalComisiones
-    -- COUNT(CASE WHEN (SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0) THEN 1  END)                                                             AS cantidadComisiones
-    -- COUNT(
-    -- CASE WHEN SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))
-    -- = 0 THEN 1 END)                                                             AS cantidadComisiones
-
+        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                                   AS sum_comisiones,
+        COUNT(CASE WHEN (ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0) > 0) THEN 1 END)      AS ops_concretadas,
+        COUNT(*)                                                                                        AS ops_totales,
+        SUM(Anuncio.precio_publicado)                                                                   AS sum_contratos_cerrados
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
              --Comision de venta
              LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
