@@ -1216,23 +1216,6 @@ FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_VENTA HechosVent
 GROUP BY HechosVenta.tipo_inmueble_id, Ubicacion.localidad, Tiempo.cuatrimestre, Tiempo.anio
 GO
 
-/*
-SELECT * from BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.PRECIO_PROMEDIO_M2
-SELECT I.superficie_total, A.precio_publicado, V.precio_venta
-FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA V
-         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO A
-              ON V.anuncio_id = A.codigo
-         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.INMUEBLE I
-              ON A.inmueble_id = I.codigo
-         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BARRIO B
-              ON I.barrio_id = B.id
-         JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.LOCALIDAD L
-              ON B.localidad_id = L.id
-WHERE L.descripcion = 'La Corvina'
-  AND I.tipo_inmueble = 'Oficina'
-*/
-
-/*
 /********************
     EJERCICIO 07
 *********************/
@@ -1240,18 +1223,19 @@ CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VALOR_PROMEDIO_COMI
 AS
 SELECT Tiempo.anio,
        Tiempo.cuatrimestre,
-       tipoOperacion.tipo_operacion_descripcion,
-       hechosOperacion.sucursal_id,
-       AVG(hechosOperacion.comision) AS promedioComision
-FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION hechosOperacion
+       TipoOperacion.tipo_operacion_descripcion,
+       HechosOperacion.sucursal_id,
+       CONVERT(DECIMAL(6, 2), SUM(HechosOperacion.sum_comisiones) /
+                              SUM(HechosOperacion.ops_concretadas)) AS promedioComision
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION HechosOperacion
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
-              ON hechosOperacion.tiempo_id = Tiempo.id
-         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOperacion
-              ON tipoOperacion.tipo_operacion_id = hechosOperacion.tipo_operacion_id
-WHERE hechosOperacion.comision != 0.0
-GROUP BY Tiempo.anio, Tiempo.cuatrimestre, tipoOperacion.tipo_operacion_descripcion, hechosOperacion.sucursal_id
+              ON HechosOperacion.tiempo_id = Tiempo.id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION TipoOperacion
+              ON TipoOperacion.tipo_operacion_id = HechosOperacion.tipo_operacion_id
+GROUP BY TipoOperacion.tipo_operacion_descripcion, HechosOperacion.sucursal_id, Tiempo.anio, Tiempo.cuatrimestre
 GO
 
+/*
 /********************
     EJERCICIO 08
 *********************/
