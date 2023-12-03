@@ -1010,16 +1010,16 @@ BEGIN
 
     SELECT
         --PK's---------------------------------------------------------------------------------------------
-        Tiempo.id                                                                        AS Tiempo,
-        Agente.sucursal_id                                                               AS Sucursal,
-        tipoOperacion.tipo_operacion_id                                                  AS tipoOperacion,
-        rangoEtario.rango_etario_id                                                      AS rangoEtario,
-        Moneda.id                                                                        AS tipoMoneda,
+        Tiempo.id                                                                      AS Tiempo,
+        Agente.sucursal_id                                                             AS Sucursal,
+        tipoOperacion.tipo_operacion_id                                                AS tipoOperacion,
+        rangoEtario.rango_etario_id                                                    AS rangoEtario,
+        Moneda.id                                                                      AS tipoMoneda,
         --Calculables--------------------------------------------------------------------------------------
-        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                    AS sum_comisiones,
-        COUNT(IIF((ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0, 1, 0)) AS ops_concretadas,
-        COUNT(*)                                                                         AS ops_totales,
-        SUM(Anuncio.precio_publicado)                                                    AS sum_contratos_cerrados
+        SUM(ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0))                  AS sum_comisiones,
+        SUM(IIF((ISNULL(Venta.comision, 0) + ISNULL(Alquiler.comision, 0)) > 0, 1, 0)) AS ops_concretadas,
+        COUNT(*)                                                                       AS ops_totales,
+        SUM(Anuncio.precio_publicado)                                                  AS sum_contratos_cerrados
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.ANUNCIO Anuncio
              --Comision de venta
              LEFT JOIN LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
@@ -1235,31 +1235,29 @@ FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION Hechos
 GROUP BY TipoOperacion.tipo_operacion_descripcion, HechosOperacion.sucursal_id, Tiempo.anio, Tiempo.cuatrimestre
 GO
 
-/*
 /********************
     EJERCICIO 08
 *********************/
 CREATE VIEW BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.OPERACIONES_CONCRETADAS
 AS
-SELECT tipoOperacion.tipo_operacion_descripcion,
-       hechosOperacion.sucursal_id,
-       rangoEtario.rango_etario_descripcion,
-       Tiempo.anio,
-       convert(DECIMAL(6, 3),
-                   (convert(DECIMAL(6, 2), COUNT(CASE WHEN hechosOperacion.comision > 0 then 1 end))
-                       /
-                    convert(DECIMAL(6, 2), COUNT(*))) * 100) as '%OperacionesConcretadas'
-FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION hechosOperacion
+SELECT TipoOperacion.tipo_operacion_descripcion AS tipoOperacion,
+       HechosOperacion.sucursal_id              AS sucursal,
+       RangoEtario.rango_etario_descripcion     AS rangoEtario,
+       Tiempo.anio                              AS anio,
+       CONVERT(DECIMAL(6, 2), SUM(HechosOperacion.ops_concretadas) / SUM(HechosOperacion.ops_totales) *
+                              100)              AS [%OperacionesConcretadas]
+FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION HechosOperacion
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
-              ON hechosOperacion.tiempo_id = Tiempo.id
-         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION tipoOperacion
-              ON tipoOperacion.tipo_operacion_id = hechosOperacion.tipo_operacion_id
-         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO rangoEtario
-              ON hechosOperacion.rango_etario_id = rangoEtario.rango_etario_id
-GROUP BY tipoOperacion.tipo_operacion_descripcion, hechosOperacion.sucursal_id,
-         rangoEtario.rango_etario_descripcion, Tiempo.anio
+              ON HechosOperacion.tiempo_id = Tiempo.id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION TipoOperacion
+              ON TipoOperacion.tipo_operacion_id = HechosOperacion.tipo_operacion_id
+         JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_RANGO_ETARIO RangoEtario
+              ON HechosOperacion.rango_etario_id = RangoEtario.rango_etario_id
+GROUP BY TipoOperacion.tipo_operacion_descripcion, HechosOperacion.sucursal_id,
+         RangoEtario.rango_etario_descripcion, Tiempo.anio
 GO
 
+/*
 /********************
     EJERCICIO 09
 *********************/
