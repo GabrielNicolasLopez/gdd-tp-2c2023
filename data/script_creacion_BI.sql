@@ -835,7 +835,6 @@ BEGIN
         --Luego en la view podemos calcular el promedio de cuanto cuesta el m2 de cada barrio
         SUM(Inmueble.superficie_total) AS sum_m2,
         SUM(Venta.precio_venta)        AS sum_precio_venta
-
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
              --Tiempo
              JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
@@ -1088,9 +1087,7 @@ SELECT TipoOperacion.descripcion                                                
        Tiempo.anio                                                                                         AS anio,
        Tiempo.cuatrimestre                                                                                 AS cuatrimestre,
        TipoMoneda.id                                                                                       AS tipo_moneda,
-       CONVERT(decimal(18, 2), SUM(HechoAnuncio.sum_precios_publicados) / SUM(HechoAnuncio.cant_anuncios)) AS precio_promedio,
-       SUM(HechoAnuncio.sum_precios_publicados)                                                            AS sum_precios_publicados,
-       SUM(HechoAnuncio.cant_anuncios)                                                                     AS cant_anuncios
+       CONVERT(decimal(18, 2), SUM(HechoAnuncio.sum_precios_publicados) / SUM(HechoAnuncio.cant_anuncios)) AS precio_promedio
 FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ANUNCIO HechoAnuncio
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIPO_OPERACION TipoOperacion
               ON TipoOperacion.id = HechoAnuncio.tipo_operacion_id
@@ -1156,7 +1153,6 @@ SELECT Tiempo.mes                                                               
 FROM BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_ALQUILER HechosAlquiler
          JOIN BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_TIEMPO Tiempo
               ON Tiempo.id = HechosAlquiler.tiempo_id
-WHERE HechosAlquiler.estado_alquiler = 'Activo'
 GROUP BY Tiempo.mes, Tiempo.anio
 GO
 
