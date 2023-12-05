@@ -832,7 +832,6 @@ BEGIN
         Inmueble.tipo_inmueble         AS tipo_inmueble_id,
         Ubicacion.id                   AS ubicacion_id,
         --Calculables--------------------------------------------------------------------------------------
-        --Luego en la view podemos calcular el promedio de cuanto cuesta el m2 de cada barrio
         SUM(Inmueble.superficie_total) AS sum_m2,
         SUM(Venta.precio_venta)        AS sum_precio_venta
     FROM LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.VENTA Venta
@@ -872,11 +871,6 @@ BEGIN
                                                                                     cant_pagos,
                                                                                     sum_incrementos,
                                                                                     cant_incrementos)
-    -- DECLARE @FECHA DATETIME = '2024/01/01': Los valores que aparecen en la sumatoria de incrementos se deben a que en el mes anterior a la fecha
-    -- de la consulta no había contrato => dicho contrato tenía un precio nulo, al tratar dicho nulo como cero, entonces el precio anterior es 0,
-    -- por ende, el incremento se calcula como: el valor del primer mes de alquiler - 0, esto no representa un incremento real.
-    -- En otras palabras, antes no había gasto, pero de repente si lo hay.
-    -- DECLARE @FECHA DATETIME = '2024-10-10'
     SELECT
         --PK's---------------------------------------------------------------------------------------------
         Tiempo.id                                                                            AS tiempo_id,
@@ -949,7 +943,6 @@ GO
 CREATE PROCEDURE BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.MIGRAR_BI_HECHOS_OPERACION
 AS
 BEGIN
-    --ACLARACION: SI COMISION = 0 ENTONCES ESTADO_ANUNCIO = FINALIZADO (AKA NO SE VENDIO NI SE ALQUILO)
     INSERT INTO BI_LOS_HEREDEROS_DE_MONTIEL_Y_EL_DATO_PERSISTIDO.BI_HECHOS_OPERACION (tiempo_id,
                                                                                       sucursal_id,
                                                                                       tipo_operacion_id,
@@ -959,14 +952,6 @@ BEGIN
                                                                                       ops_concretadas,
                                                                                       ops_totales,
                                                                                       sum_contratos_cerrados)
-    -- si una operacion no se concreta -> no tiene comision
-    -- si la operacion se concreta -> tiene comision
-    -- cantidad de comisiones -> cantidad de operaciones concretadas
-    -- cant_comisiones y ops_concretadas se juntan en ops_concretadas ya que toda operacion concretada posee una comision
-    -- esto sucede debido a que un anuncio puede resultar en una venta o en un alquiler, siendo una de las dos comisiones (la de la venta
-    -- o la del alquiler) siempre nulas
-    -- suponemos que el monto de cierre de contratos implica sumar todos los precios publicados de anuncios del GROUP BY
-
     SELECT
         --PK's---------------------------------------------------------------------------------------------
         Tiempo.id                                                                       AS tiempo,
