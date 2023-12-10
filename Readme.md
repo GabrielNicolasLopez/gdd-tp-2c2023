@@ -1,3 +1,7 @@
+<div align="center">
+         <img src="https://github.com/GabrielNicolasLopez/gdd-tp-2c2023/assets/71357842/3e84405a-7699-40f8-93e4-aeeb35ce9592">
+</div>
+
 # Proyecto de Migración de Datos - Inmobiliaria
 
 ¡Bienvenido al repositorio del proyecto de migración de datos realizado por nuestro equipo en el segundo cuatrimestre de 2023 en la materia Gestión de Datos!
@@ -18,5 +22,5 @@ Este proyecto fue desarrollado con pasión y dedicación por:
 | ------------- | ------------- |
 | López, Gabriel | <a href="https://github.com/GabrielNicolasLopez">@GabrielNicolasLopez</a>  |
 | Gutierrez, Mariano   | <a href="https://github.com/gutti-mg">@gutti-mg</a> |
-| Blastre, Santiago    | <a href="https://github.com/jlsuh">@SantiagoBlastre00</a> |
-| Ferreira, Alexander   | <a href="https://github.com/MauroDe999">@Alexander-Ferreira</a> |
+| Suh, Joel    | <a href="https://github.com/jlsuh">@jlsuh</a> |
+| De Marco, Mauro   | <a href="https://github.com/MauroDe999">@MauroDe999</a> |
