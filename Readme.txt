@@ -1,4 +1,4 @@
-# Proyecto de Migración de Datos - Inmobiliaria
+Proyecto de Migración de Datos - Inmobiliaria
 
 ¡Bienvenido al repositorio del proyecto de migración de datos realizado por nuestro equipo en el segundo cuatrimestre de 2023 en la materia Gestión de Datos!
 
